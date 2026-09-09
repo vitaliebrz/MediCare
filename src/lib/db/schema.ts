@@ -172,6 +172,12 @@ export const treatmentsRelations = relations(teethStatus, ({ one }) => ({
     }),
 }));
 
+export const categories = pgTable('categories', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull()
+})
+
 // ====================================================
 // TYPES pentru TypeScript (auto-generare)
 // ====================================================
@@ -191,3 +197,4 @@ export type NewToothStatus = typeof teethStatus.$inferInsert;
 export type Service = typeof services.$inferSelect;
 export type NewService = typeof services.$inferInsert;
 export type ClinicSettings = typeof clinicSettings.$inferSelect
+export type category = typeof categories.$inferSelect;
