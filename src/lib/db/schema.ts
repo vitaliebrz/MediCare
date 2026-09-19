@@ -42,7 +42,7 @@ export const users = pgTable('users', {
     avatarUrl: text('avatar_url'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
-})
+}).enableRLS()
 
 // ==========================================
 // Tabel: Patients (pacienți)
@@ -78,7 +78,7 @@ export const patients = pgTable('patients', {
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
     createdBy: uuid('created_by').references(() => users.id),
-});
+}).enableRLS()
 
 // ===================================================
 // Table: Treatments (istoric tratamente per dinte)
@@ -104,7 +104,7 @@ export const treatments = pgTable('treatments', {
     performedAt: timestamp('performed_at').defaultNow().notNull(),
     performedBy: uuid('performed_by').references(() => users.id),
     createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+}).enableRLS()
 
 // ========================================================
 // Table: TEETH_STATUS (starea curenta a fiecarui dinte)
@@ -118,7 +118,7 @@ export const teethStatus = pgTable('teeth_status', {
     status: toothStatusEnum('status').notNull().default('sanatos'),
     notes: text('notes'),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}).enableRLS()
 
 // ====================================================
 // Tabel: SERVICES (lista serviciilor cu tarife)
@@ -127,17 +127,16 @@ export const teethStatus = pgTable('teeth_status', {
 export const services = pgTable('services', {
     id: uuid('id').defaultRandom().primaryKey(),
     name: text('name').notNull(), // "Extractie dentara"
-    category: text('category'), //"Terapie", "Chirurgie", "Protezare"
+    category: text('category').notNull(), //"Terapie", "Chirurgie", "Protezare"
     description: text('description'),
     price: decimal('price', { precision: 10, scale: 2 }).notNull(),
-    durationMinutes: integer('duration_minutes'), //durata estimata
+    durationMinutes: integer('duration_minutes').notNull(), //durata estimata
     active: boolean('active').notNull().default(true),
     createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+}).enableRLS()
 
 // ====================================================
 // Tabel: CLINIC_SETTINGS (setari cabinet)
-// Doar un singur rand
 // ====================================================
 
 export const clinicSettings = pgTable('clinic_settings', {
@@ -150,7 +149,36 @@ export const clinicSettings = pgTable('clinic_settings', {
     workingHours: text('working_hours'), //"Luni-Vineri 8:00-18:00"
     currency: text('curency').notNull().default('MDL'),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}).enableRLS()
+
+// ====================================================
+// Tabel: Categorii (categoriile din care fac parte serviciile)
+// ====================================================
+
+export const categories = pgTable('categories', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull()
+}).enableRLS()
+
+// ====================================================
+// Tabelul: Medici
+// ====================================================
+export const doctorColorEnum = pgEnum('doctor_color', [
+    'blue', 'green', 'purple', 'orange', 'pink', 'teal'
+])
+export const doctors = pgTable('doctors', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    firstName: text('first_name').notNull(),
+    lastName: text('last_name').notNull(),
+    categoryId: uuid('category_id').references(() => categories.id).notNull(),
+    phone: text('phone'),
+    email: text('email'),
+    hireDate: date('hire_date'),
+    active: boolean('active').notNull().default(true),
+    color: doctorColorEnum('color').notNull().default('teal'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+}).enableRLS()
 
 // ====================================================
 // RELATII (pentru queri-uri complexe)
@@ -172,11 +200,7 @@ export const treatmentsRelations = relations(teethStatus, ({ one }) => ({
     }),
 }));
 
-export const categories = pgTable('categories', {
-    id: uuid('id').defaultRandom().primaryKey(),
-    name: text('name').notNull(),
-    createdAt: timestamp('created_at').defaultNow().notNull()
-})
+
 
 // ====================================================
 // TYPES pentru TypeScript (auto-generare)
@@ -197,4 +221,7 @@ export type NewToothStatus = typeof teethStatus.$inferInsert;
 export type Service = typeof services.$inferSelect;
 export type NewService = typeof services.$inferInsert;
 export type ClinicSettings = typeof clinicSettings.$inferSelect
-export type category = typeof categories.$inferSelect;
+export type Category = typeof categories.$inferSelect;
+
+export type Color = (typeof doctorColorEnum.enumValues)[number];
+export type Doctors = typeof doctors.$inferSelect;
