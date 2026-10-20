@@ -50,6 +50,14 @@ Antetul tabelului din jurnal se repetă pe fiecare pagină. Un rând nu se rupe 
 | Font **Noto Sans** (OFL) în `src/assets/fonts/` | Helvetica, fontul standard din PDF, nu are ș, ț, ă, î, â. |
 | Notațiile T / N / A în formula dentară | Avem doar 5 stări ale dinților. Notațiile oficiale complete (C, P, Pt, Pl, K, R, I…) cer stări noi. |
 
+## Logo-ul clinicii
+- Se încarcă din **Setări → Clinică** (PNG sau JPG, max. 1 MB). Se salvează imediat, separat de formularul cu datele clinicii.
+- Fișierul stă în Supabase Storage, în bucket-ul public `clinic-logos`, în folderul `<clinicId>/`. Bucket-ul se creează automat la prima încărcare. În `clinic_settings.logo_url` rămâne adresa publică. Fiecare încărcare primește un nume nou, ca să nu rămână imaginea veche în cache, iar logo-urile vechi se șterg.
+- Tipul fișierului e verificat pe server după primii octeți, nu după extensie. PNG/JPG pentru că `@react-pdf` nu suportă SVG/WebP.
+- **Unde apare:** în antetul fișei 043/e, în PDF-ul rapoartelor și în antetul paginii Rapoarte. **Nu** apare în meniu sau în bara de sus, unde rămân logo-ul și numele aplicației MediCare.
+- În PDF, logo-ul e descărcat pe server (`loadLogoForPdf`), doar din Storage-ul proiectului. Dacă lipsește sau nu se poate citi, PDF-ul se face fără logo.
+- Storage e accesat prin API-ul HTTP (`src/lib/supabase/admin.ts`), nu prin `@supabase/supabase-js`. Clientul complet pornește realtime (WebSocket), care pe Node.js 20 nu există și oprește crearea clientului.
+
 ## Fișiere
 
 | Fișier | Rol |

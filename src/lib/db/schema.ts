@@ -190,9 +190,8 @@ export const clinicSettings = pgTable('clinic_settings', {
     address: text('address'),
     phone: text('phone'),
     email: text('email'),
-    logoUrl: text('logo_url'),
-    workingHours: text('working_hours'), //"Luni-Vineri 8:00-18:00"
-    // Intervalul afișat în calendarul de programări (Postgres întoarce '08:00:00')
+    logoUrl: text('logo_url'), // adresa publică a logo-ului din Supabase Storage (vezi uploadClinicLogo)
+    // Programul de lucru = intervalul afișat în calendarul de programări (Postgres întoarce '08:00:00')
     dayStart: time('day_start').notNull().default('08:00'),
     dayEnd: time('day_end').notNull().default('20:00'),
     currency: text('curency').notNull().default('MDL'),

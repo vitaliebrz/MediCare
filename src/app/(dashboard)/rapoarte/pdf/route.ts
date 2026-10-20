@@ -2,6 +2,7 @@ import { getReport } from '@/lib/actions/reports';
 import { getClinicSettings } from '@/lib/actions/clinic-settings';
 import { todayInClinic } from '@/lib/dashboard-period';
 import { renderReportPdf } from '@/components/reports/report-pdf';
+import { loadLogoForPdf } from '@/lib/clinic-logo';
 
 // GET /rapoarte/pdf?raport=financiar&perioada=30z&medic=<id>
 // Raportul întreg în PDF, deschis în browser (de acolo se printează sau se salvează).
@@ -23,6 +24,7 @@ export async function GET(request: Request) {
         clinic,
         filterLabel: doctor ? `Dr. ${doctor.lastName} ${doctor.firstName}` : null,
         generatedOn: today,
+        logo: await loadLogoForPdf(clinic?.logoUrl),
     });
 
     return new Response(new Uint8Array(pdf), {

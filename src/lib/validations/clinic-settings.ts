@@ -7,10 +7,9 @@ export const clinicSettingsSchema = z.object({
     address: z.string().optional(),
     phone: z.string().optional(),
     email: z.string().email('Email invalid').optional().or(z.literal('')),
-    logoUrl: z.string().optional(),
-    workingHours: z.string().optional(),
     currency: z.string().default('MDL'),
-    // Intervalul orar afișat în calendarul de programări
+    // Programul de lucru, folosit și ca interval al calendarului de programări.
+    // Logo-ul nu e aici: se încarcă separat (uploadClinicLogo)
     dayStart: hhmm,
     dayEnd: hhmm,
 }).refine((data) => data.dayStart < data.dayEnd, {

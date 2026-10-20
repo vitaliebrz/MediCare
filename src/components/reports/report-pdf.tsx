@@ -1,9 +1,10 @@
-import { Document, Page, StyleSheet, Text, View, renderToBuffer } from '@react-pdf/renderer';
+import { Document, Image, Page, StyleSheet, Text, View, renderToBuffer } from '@react-pdf/renderer';
 import { PDF_FONT } from '@/components/medical-record/pdf-fonts';
 import { formatDate } from '@/lib/format';
 import { formatCell, isNumeric } from '@/lib/reports/format';
 import type { ReportBase, ReportColumn, ReportTable } from '@/lib/reports/types';
 import type { ClinicSettings } from '@/lib/db/schema';
+import type { LogoFormat } from '@/lib/clinic-logo';
 
 // PDF-ul unui raport: antet, cifrele-cheie și toate tabelele, din aceeași descriere ca pagina și CSV-ul.
 // Graficele nu intră: la printare, tabelele cu cifre sunt mai utile.
@@ -12,6 +13,8 @@ const styles = StyleSheet.create({
     page: { fontFamily: PDF_FONT, fontSize: 8.5, paddingTop: 28, paddingBottom: 40, paddingHorizontal: 30, color: '#111' },
     header: { flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#111', paddingBottom: 6 },
     clinicName: { fontSize: 10, fontWeight: 'bold' },
+    clinicBlock: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    logo: { width: 36, height: 36, objectFit: 'contain' },
     small: { fontSize: 7.5, color: '#555' },
     title: { marginTop: 10, fontSize: 14, fontWeight: 'bold' },
     subtitle: { marginTop: 2, fontSize: 9, color: '#444' },
@@ -84,9 +87,10 @@ interface ReportPdfProps {
     clinic: ClinicSettings | null;
     filterLabel: string | null; // ex. „Dr. Popescu Ion”
     generatedOn: string;
+    logo?: { data: Buffer; format: LogoFormat } | null; // logo-ul clinicii, deja descărcat
 }
 
-export const ReportPdf = ({ report, clinic, filterLabel, generatedOn }: ReportPdfProps) => {
+export const ReportPdf = ({ report, clinic, filterLabel, generatedOn, logo }: ReportPdfProps) => {
     const currency = clinic?.currency ?? 'MDL';
     // Tabelele cu multe coloane încap mai bine pe orizontală
     const landscape = report.tables.some((table) => table.columns.length > 7);
@@ -96,9 +100,13 @@ export const ReportPdf = ({ report, clinic, filterLabel, generatedOn }: ReportPd
         <Document title={`${report.title} — ${subtitle}`} author={clinic?.clinicName ?? undefined} language='ro'>
             <Page size='A4' orientation={landscape ? 'landscape' : 'portrait'} style={styles.page}>
                 <View style={styles.header}>
-                    <View>
-                        <Text style={styles.clinicName}>{clinic?.clinicName ?? 'Clinica'}</Text>
-                        {clinic?.address && <Text style={styles.small}>{clinic.address}</Text>}
+                    <View style={styles.clinicBlock}>
+                        {/* eslint-disable-next-line jsx-a11y/alt-text -- Image din react-pdf, nu <img> HTML */}
+                        {logo && <Image src={logo} style={styles.logo} />}
+                        <View>
+                            <Text style={styles.clinicName}>{clinic?.clinicName ?? 'Clinica'}</Text>
+                            {clinic?.address && <Text style={styles.small}>{clinic.address}</Text>}
+                        </View>
                     </View>
                     <Text style={styles.small}>Generat la {formatDate(generatedOn)}</Text>
                 </View>

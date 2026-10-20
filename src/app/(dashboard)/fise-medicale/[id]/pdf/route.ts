@@ -2,6 +2,7 @@ import { getPatientChart } from '@/lib/actions/treatments';
 import { getClinicSettings } from '@/lib/actions/clinic-settings';
 import { todayInClinic } from '@/lib/dashboard-period';
 import { renderMedicalRecordPdf } from '@/components/medical-record/medical-record-pdf';
+import { loadLogoForPdf } from '@/lib/clinic-logo';
 
 // GET /fise-medicale/<id>/pdf            -> fișa 043/e deschisă în browser (de acolo se printează)
 // GET /fise-medicale/<id>/pdf?descarca=1 -> aceeași fișă, descărcată ca fișier
@@ -13,7 +14,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         return new Response('Pacientul nu există.', { status: 404 });
     }
 
-    const pdf = await renderMedicalRecordPdf({ chart, clinic, issuedOn: todayInClinic() });
+    const logo = await loadLogoForPdf(clinic?.logoUrl);
+    const pdf = await renderMedicalRecordPdf({ chart, clinic, issuedOn: todayInClinic(), logo });
 
     const { patient } = chart;
     const fileName = `fisa-043e-nr${patient.recordNumber ?? ''}-${slug(`${patient.lastName} ${patient.firstName}`)}.pdf`;

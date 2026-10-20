@@ -1,4 +1,4 @@
-import { Document, Page, StyleSheet, Text, View, renderToBuffer } from '@react-pdf/renderer';
+import { Document, Image, Page, StyleSheet, Text, View, renderToBuffer } from '@react-pdf/renderer';
 import { PDF_FONT } from './pdf-fonts';
 import { DentalFormulaPdf } from './dental-formula-pdf';
 import { formatDate } from '@/lib/format';
@@ -6,6 +6,7 @@ import { calculateAge } from '@/lib/patient-age';
 import type { ClinicSettings, ToothStatusValue } from '@/lib/db/schema';
 import type { PatientChart } from '@/lib/actions/treatments';
 import type { Dentition } from '@/lib/teeth';
+import type { LogoFormat } from '@/lib/clinic-logo';
 
 // Fișa medicală a bolnavului stomatologic — Formular 043/e (structura standard).
 // Secțiunile fără date în aplicație se tipăresc cu rânduri goale, de completat de mână.
@@ -17,6 +18,8 @@ const styles = StyleSheet.create({
     page: { fontFamily: PDF_FONT, fontSize: 9, paddingTop: 32, paddingBottom: 48, paddingHorizontal: 36, color: '#111' },
     header: { flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#111', paddingBottom: 6 },
     clinicName: { fontSize: 11, fontWeight: 'bold' },
+    clinicBlock: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    logo: { width: 44, height: 44, objectFit: 'contain' },
     small: { fontSize: 8, color: '#444' },
     formCode: { fontSize: 8, textAlign: 'right' },
     title: { marginTop: 12, fontSize: 13, fontWeight: 'bold', textAlign: 'center' },
@@ -76,9 +79,10 @@ interface MedicalRecordPdfProps {
     chart: PatientChart;
     clinic: ClinicSettings | null;
     issuedOn: string; // 'YYYY-MM-DD', ziua generării, în ora Chișinăului
+    logo?: { data: Buffer; format: LogoFormat } | null; // logo-ul clinicii, deja descărcat
 }
 
-export const MedicalRecordPdf = ({ chart, clinic, issuedOn }: MedicalRecordPdfProps) => {
+export const MedicalRecordPdf = ({ chart, clinic, issuedOn, logo }: MedicalRecordPdfProps) => {
     const { patient, teeth, treatments } = chart;
     const age = calculateAge(patient.birthDate);
     const statuses = new Map<number, ToothStatusValue>(teeth.map((tooth) => [tooth.toothNumber, tooth.status]));
@@ -113,12 +117,16 @@ export const MedicalRecordPdf = ({ chart, clinic, issuedOn }: MedicalRecordPdfPr
             <Page size='A4' style={styles.page}>
                 {/* Antet */}
                 <View style={styles.header}>
-                    <View>
-                        <Text style={styles.clinicName}>{clinic?.clinicName ?? 'Instituția medicală'}</Text>
-                        {clinic?.address && <Text style={styles.small}>{clinic.address}</Text>}
-                        {(clinic?.phone || clinic?.email) && (
-                            <Text style={styles.small}>{[clinic?.phone, clinic?.email].filter(Boolean).join(' · ')}</Text>
-                        )}
+                    <View style={styles.clinicBlock}>
+                        {/* eslint-disable-next-line jsx-a11y/alt-text -- Image din react-pdf, nu <img> HTML */}
+                        {logo && <Image src={logo} style={styles.logo} />}
+                        <View>
+                            <Text style={styles.clinicName}>{clinic?.clinicName ?? 'Instituția medicală'}</Text>
+                            {clinic?.address && <Text style={styles.small}>{clinic.address}</Text>}
+                            {(clinic?.phone || clinic?.email) && (
+                                <Text style={styles.small}>{[clinic?.phone, clinic?.email].filter(Boolean).join(' · ')}</Text>
+                            )}
+                        </View>
                     </View>
                     <View>
                         <Text style={styles.formCode}>Formular 043/e</Text>
