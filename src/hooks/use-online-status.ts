@@ -1,21 +1,20 @@
 'use client'
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+// Abonare la evenimentele browser-ului: React re-citește valoarea când se schimbă conexiunea
+function subscribe(callback: () => void) {
+    window.addEventListener('online', callback);
+    window.addEventListener('offline', callback);
+    return () => {
+        window.removeEventListener('online', callback);
+        window.removeEventListener('offline', callback);
+    }
+}
 
 export function useOnlineStatus() {
-    const [isOnline, setIsOnline] = useState(true);
-    
-    useEffect(() => {
-        setIsOnline(navigator.onLine);
-
-        const handleOnline = () => setIsOnline(true);
-        const handleOffline = () => setIsOnline(false);
-
-        window.addEventListener('online', handleOnline);
-        window.addEventListener('offline', handleOffline)
-        return () => {
-            window.removeEventListener('online', handleOnline);
-            window.removeEventListener('offline', handleOffline);
-        }
-    }, []);
-    return isOnline
+    return useSyncExternalStore(
+        subscribe,
+        () => navigator.onLine, // pe client
+        () => true              // pe server (nu există navigator)
+    );
 }

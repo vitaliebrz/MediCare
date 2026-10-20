@@ -33,7 +33,7 @@ export const ServiceTable = ({ services, categories, currency }: ServiceTablePro
         try {
             const result = await updateService(service.id, {
                 name: service.name,
-                category: service.category ,
+                categoryId: service.categoryId,
                 description: service.description ?? undefined,
                 price: Number(service.price),
                 durationMinutes: service.durationMinutes,
@@ -103,7 +103,7 @@ export const ServiceTable = ({ services, categories, currency }: ServiceTablePro
                                 <div> {service.name} </div>
                                 <div className="truncate text-sm text-muted-foreground line-clamp-2" title={service.description ?? ''}> {service.description}</div>
                             </TableCell>
-                            <TableCell className="md:max-w-30"> <span className="bg-zinc-500/20 px-2 py-1 rounded-xl text-xs">{service.category}</span></TableCell>
+                            <TableCell className="md:max-w-30"> <span className="bg-zinc-500/20 px-2 py-1 rounded-xl text-xs">{categories.find((cat)=> cat.id === service.categoryId)?.name}</span></TableCell>
                             <TableCell>{service.durationMinutes} min</TableCell>
                             <TableCell className="font-semibold">{service.price} {currency}</TableCell>
                             <TableCell>

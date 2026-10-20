@@ -29,18 +29,19 @@ export const ClinicSettingsForm = ({ initialData }: ClinicSettingsFormProps) => 
             logoUrl: initialData ? initialData.logoUrl ?? '' : '',
             workingHours: initialData ? initialData.workingHours ?? '' : '',
             currency: initialData ? initialData.currency : 'MDL',
-
+            // Postgres întoarce ora ca '08:00:00'; inputul type=time vrea '08:00'
+            dayStart: initialData ? initialData.dayStart.slice(0, 5) : '08:00',
+            dayEnd: initialData ? initialData.dayEnd.slice(0, 5) : '20:00',
         }
     })
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-    const id = initialData ? initialData.id ?? '' : '';
 
     const onSubmit = async (data: ClinicSettingsFormData) => {
         setLoading(true);
         setErrorMessage('');
-        const result = await updateClinicSettings(id, data);
+        const result = await updateClinicSettings(data);
         if (result.success) {
             setSuccess(true);
         } else {
@@ -127,6 +128,17 @@ export const ClinicSettingsForm = ({ initialData }: ClinicSettingsFormProps) => 
                                 {...register('workingHours')}></Input>
                             {errors.workingHours && (
                                 <p className="text-sm text-red-600">{errors.workingHours.message}</p>
+                            )}
+                        </div>
+                        <div className='flex flex-col gap-2'>
+                            <Label className='text-zinc-500'>Intervalul afișat în calendarul de programări</Label>
+                            <div className='flex items-center gap-2'>
+                                <Input type='time' step={900} aria-label='Ora de început' {...register('dayStart')} />
+                                <span className='text-zinc-400'>–</span>
+                                <Input type='time' step={900} aria-label='Ora de sfârșit' {...register('dayEnd')} />
+                            </div>
+                            {(errors.dayStart || errors.dayEnd) && (
+                                <p className="text-sm text-red-600">{errors.dayStart?.message ?? errors.dayEnd?.message}</p>
                             )}
                         </div>
                         <div className='flex flex-col gap-2'>

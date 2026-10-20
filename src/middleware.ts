@@ -1,6 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+// Pagini accesibile fără cont. Un utilizator autentificat e trimis la dashboard.
+const PUBLIC_ROUTES = ['/login', '/register', '/forgot-password'];
+// Accesibile oricui: aici utilizatorul încă nu are sesiune, dar o va primi.
+const AUTH_FLOW_ROUTES = ['/auth/confirm'];
+
 export async function middleware(request: NextRequest) {
     let response = NextResponse.next({ request });
 
@@ -27,11 +32,18 @@ export async function middleware(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user && !request.nextUrl.pathname.startsWith('/login')) {
+    const { pathname } = request.nextUrl;
+    if (AUTH_FLOW_ROUTES.some((route) => pathname.startsWith(route))) {
+        return response;
+    }
+
+    const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
+
+    if (!user && !isPublic) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    if (user && request.nextUrl.pathname.startsWith('/login')) {
+    if (user && isPublic) {
         return NextResponse.redirect(new URL('/', request.url));
     }
     return response;

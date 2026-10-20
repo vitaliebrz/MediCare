@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import DentalToothIcon from '@iconify-react/hugeicons/dental-tooth';
@@ -32,27 +32,37 @@ interface SidebarProps {
     userRole?: string;
 }
 
+// Abonare la schimbările din localStorage (ex. din alt tab)
+function subscribeToStorage(callback: () => void) {
+    window.addEventListener('storage', callback);
+    return () => window.removeEventListener('storage', callback);
+}
+
 export const Sidebar = ({ userEmail, userName, userRole }: SidebarProps) => {
-    const [collapsed, setCollapsed] = useState(false);
+    const router = useRouter();
     const pathname = usePathname();
+
+    // Preferința salvată: pe server e mereu false, pe client se citește din localStorage
+    const savedCollapsed = useSyncExternalStore(
+        subscribeToStorage,
+        () => localStorage.getItem('sidebar-collapsed') === 'true',
+        () => false
+    );
+    // null = utilizatorul n-a apăsat încă butonul, deci folosim preferința salvată
+    const [collapsedOverride, setCollapsedOverride] = useState<boolean | null>(null);
+    const collapsed = collapsedOverride ?? savedCollapsed;
+
+    const toggleCollapsed = () => {
+        const next = !collapsed;
+        setCollapsedOverride(next);
+        localStorage.setItem('sidebar-collapsed', String(next));
+    };
 
     const handleLogout = async () => {
         await fetch('/api/auth/signout', { method: 'POST' });
-        window.location.href = '/login';
+        router.push('/login');
+        router.refresh();
     };
-
-    // Citește preferința salvată la montare
-    useEffect(() => {
-        const saved = localStorage.getItem('sidebar-collapsed');
-        if (saved === 'true') {
-            setCollapsed(true);
-        }
-    }, []);
-
-    // Salvează preferința de fiecare dată când se schimbă
-    useEffect(() => {
-        localStorage.setItem('sidebar-collapsed', String(collapsed));
-    }, [collapsed]);
 
     const initials = (userName || userEmail)
         .split(' ')
@@ -65,13 +75,13 @@ export const Sidebar = ({ userEmail, userName, userRole }: SidebarProps) => {
         <aside
             className={cn(
                 'hidden md:flex flex-col h-screen justify-between bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-all duration-200',
-                collapsed ? 'w-[72px]' : 'w-64'
+                collapsed ? 'w-18' : 'w-64'
             )}
         >
             <div>
                 {/* Logo */}
             <div className={cn(
-                'p-5 flex gap-2 items-center text-lg text-slate-900 font-semibold border-b-1',
+                'p-5 flex gap-2 items-center text-lg text-slate-900 font-semibold border-b',
                 collapsed && 'justify-center px-0'
             )}>
                 <div className='bg-teal-500 text-white p-1 rounded-lg shrink-0'>
@@ -108,7 +118,7 @@ export const Sidebar = ({ userEmail, userName, userRole }: SidebarProps) => {
             
 
             {/* Bottom section */}
-            <div className='p-5 flex flex-col gap-2 border-t-1'>
+            <div className='p-5 flex flex-col gap-2 border-t'>
                 <Link href='/setari/clinica'>
                     <div
                         className={cn(
@@ -153,7 +163,7 @@ export const Sidebar = ({ userEmail, userName, userRole }: SidebarProps) => {
 
                 {/* Buton collapse */}
                 <button
-                    onClick={() => setCollapsed(!collapsed)}
+                    onClick={toggleCollapsed}
                     className={cn(
                         'flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-500 hover:bg-slate-200/70 hover:text-zinc-700 hover:cursor-pointer',
                         collapsed && 'justify-center px-0'
