@@ -12,6 +12,7 @@ Aplicație web pentru un cabinet stomatologic: pacienți, programări, schema de
 - **Rapoarte**: financiar și datorii, medici, servicii, programări și pacienți, cu export CSV (Excel) și PDF.
 - **Notificări**: alerte calculate din date (programări neconfirmate, datorii vechi, pacienți de rechemat...).
 - **Setări**: clinica (logo, program de lucru), categorii, servicii, medici, notificări, cont.
+- **Aplicație instalabilă (PWA)**: se poate instala pe telefon sau calculator (iconiță, fereastră proprie, ecran „fără internet”).
 
 ## Tehnologii
 - [Next.js 16](https://nextjs.org) (App Router, Server Actions), React 19, TypeScript

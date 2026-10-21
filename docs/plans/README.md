@@ -10,6 +10,7 @@ Fiecare modul mai mare are un plan scris înainte de implementare: ce face, deci
 | 2026-10-20 | Rapoarte | [rapoarte.md](rapoarte.md) | implementat |
 | 2026-10-21 | Performanță | [performanta.md](performanta.md) | implementat |
 | 2026-10-21 | Notificări și Cont | [notificari-cont.md](notificari-cont.md) | implementat |
+| 2026-10-21 | Aplicație instalabilă (PWA) | [pwa.md](pwa.md) | implementat |
 
 ## Convenții pentru un plan nou
 - Fișier: `docs/plans/<modul>.md`, adăugat în tabelul de mai sus.
