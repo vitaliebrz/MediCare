@@ -1,4 +1,4 @@
-// Acces la Supabase Storage cu cheia de serviciu (ocolește regulile de acces). Doar pe server:
+// Acces la Supabase Storage și Auth cu cheia de serviciu (ocolește regulile de acces). Doar pe server:
 // cheia nu are prefixul NEXT_PUBLIC_, deci nu ajunge niciodată în browser.
 // Se folosește numai DUPĂ ce acțiunea a verificat utilizatorul (getCurrentUser).
 //
@@ -59,4 +59,21 @@ export const storage = {
     },
 
     publicUrl: (bucket: string, path: string) => `${baseUrl()}/object/public/${bucket}/${path}`,
+};
+
+// Supabase Auth (administrare), tot prin API-ul HTTP și tot doar după verificarea utilizatorului
+export const authAdmin = {
+    // Schimbă emailul de login imediat (email_confirm: fără email de confirmare).
+    // Întoarce codul de eroare al Supabase (ex. 'email_exists') sau null la succes.
+    async updateEmail(userId: string, email: string): Promise<string | null> {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users/${userId}`, {
+            method: 'PUT',
+            headers: headers({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ email, email_confirm: true }),
+            cache: 'no-store',
+        });
+        if (response.ok) return null;
+        const body = (await response.json().catch(() => ({}))) as { error_code?: string; code?: string };
+        return body.error_code ?? body.code ?? `http_${response.status}`;
+    },
 };

@@ -15,13 +15,13 @@ import { profileSchema, type ProfileFormData } from '@/lib/validations/account';
 
 interface ProfileFormProps {
     initialData: ProfileFormData;
-    email: string;
     roleLabel: string;
     clinicName: string;
 }
 
-// Profilul utilizatorului logat: numele și telefonul se pot schimba; emailul, rolul și clinica doar se văd
-export const ProfileForm = ({ initialData, email, roleLabel, clinicName }: ProfileFormProps) => {
+// Profilul utilizatorului logat: numele și telefonul se pot schimba; rolul și clinica doar se văd.
+// Emailul de login are cardul lui (email-form.tsx), pentru că cere și parola curentă.
+export const ProfileForm = ({ initialData, roleLabel, clinicName }: ProfileFormProps) => {
     const { register, handleSubmit, reset, formState: { errors, isSubmitting, isDirty } } = useForm<ProfileFormData>({
         resolver: zodResolver(profileSchema),
         defaultValues: initialData,
@@ -63,17 +63,9 @@ export const ProfileForm = ({ initialData, email, roleLabel, clinicName }: Profi
                         {errors.phone && <p className='text-sm text-red-600'>{errors.phone.message}</p>}
                     </div>
 
-                    {/* Doar afișate: emailul e și numele de login, se schimbă doar prin administrator */}
-                    <dl className='grid gap-3 rounded-md bg-slate-50 p-3 text-sm sm:grid-cols-2'>
-                        <div>
-                            <dt className='text-xs text-slate-500'>Email (login)</dt>
-                            <dd className='break-all'>{email}</dd>
-                        </div>
-                        <div>
-                            <dt className='text-xs text-slate-500'>Clinica</dt>
-                            <dd>{clinicName}</dd>
-                        </div>
-                        <p className='text-xs text-slate-500 sm:col-span-2'>Emailul se schimbă doar prin administrator.</p>
+                    <dl className='rounded-md bg-slate-50 p-3 text-sm'>
+                        <dt className='text-xs text-slate-500'>Clinica</dt>
+                        <dd>{clinicName}</dd>
                     </dl>
 
                     {errorMessage && <p className='text-sm text-red-600'>{errorMessage}</p>}

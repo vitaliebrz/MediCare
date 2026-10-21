@@ -7,6 +7,14 @@ export const profileSchema = z.object({
 });
 export type ProfileFormData = z.infer<typeof profileSchema>;
 
+// Schimbarea emailului de login: adresa nouă + parola curentă (ca la schimbarea parolei)
+export const changeEmailSchema = z.object({
+    // întâi curățăm (spații, majuscule), apoi verificăm formatul
+    email: z.string().trim().toLowerCase().pipe(z.email('Introdu un email valid')),
+    currentPassword: z.string().min(1, 'Introdu parola curentă'),
+});
+export type ChangeEmailFormData = z.infer<typeof changeEmailSchema>;
+
 // Schimbarea parolei: parola curentă + cea nouă de două ori (aceeași regulă de 8 caractere ca la resetare)
 export const changePasswordSchema = z.object({
     currentPassword: z.string().min(1, 'Introdu parola curentă'),
