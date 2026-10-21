@@ -4,6 +4,15 @@ Aplicație web pentru un cabinet stomatologic: pacienți, programări, schema de
 
 > Proiect personal de învățare. Datele demonstrative sunt inventate; aplicația nu conține date reale ale pacienților.
 
+## Demo
+**https://medicare-ochre-zeta.vercel.app/login**
+
+| Email | Parolă |
+|---|---|
+| `user@mail.com` | `user1234!` |
+
+Contul demo are o clinică cu pacienți, programări, tratamente și rapoarte (toate inventate). Aplicația se poate și instala pe telefon (PWA).
+
 ## Ce face
 - **Dashboard**: pacienți, programări, venit și datorii pe perioadă, programările de azi, activitatea recentă.
 - **Pacienți**: listă cu căutare, fișa pacientului cu schema dentară (adult / copil, notația FDI), istoric de tratamente și plăți.
