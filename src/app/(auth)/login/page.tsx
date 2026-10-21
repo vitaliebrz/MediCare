@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { use, useState, useSyncExternalStore } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient, setRememberMePreference } from '@/lib/supabase/client';
 import { useAuthStore } from '@/stores/auth-store';
@@ -9,13 +10,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
-import DentalToothIcon from '@iconify-react/hugeicons/dental-tooth';
 import { Checkbox } from "@/components/ui/checkbox"
+import { AuthShell } from '@/components/auth/auth-shell';
 
+const subscribeNoop = () => () => {};
 
-
-export default function LoginPage() {
+export default function LoginPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ reset?: string }>;
+}) {
     const router = useRouter();
+    // ?reset=success vine de la /reset-password după ce parola a fost schimbată
+    const passwordReset = use(searchParams).reset === 'success';
 
 
     const {
@@ -25,18 +32,14 @@ export default function LoginPage() {
         setLastLogin
     } = useAuthStore();
 
-    const [email, setEmail] = useState('');
+    // null = utilizatorul n-a scris nimic, deci afișăm emailul salvat (dacă există)
+    const [typedEmail, setEmail] = useState<string | null>(null);
+    const email = typedEmail ?? (rememberMe && lastLoginEmail ? lastLoginEmail : '');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-        if (rememberMe && lastLoginEmail) {
-            setEmail(lastLoginEmail);
-        }
-    }, [rememberMe, lastLoginEmail]);
+    // false pe server și la hidratare, true după ce pagina rulează în browser
+    const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
 
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -79,17 +82,7 @@ export default function LoginPage() {
         return null;
     }
     return (
-        <div className=' flex flex-col-reverse md:flex-row bg-linear-to-r from-white from-50% black to-50% w-full h-screen'>
-            <div className='h-dvh md:w-1/2 flex justify-center items-center'>
-                <div className='w-lg lg:max-w-md lg:w-1/2 px-5'>
-                    <div className="mb-8">
-                        <div className="flex items-center gap-3 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                            <div className="bg-teal-500 text-white text-lg p-2 rounded-lg">
-                                <DentalToothIcon className='w-7 h-7' />
-                            </div>
-                            MediCare
-                        </div>
-                    </div>
+        <AuthShell>
                     <Card className='shadow-xl '>
                         <CardHeader className='space-y-1 mb-5'>
                             <CardTitle className='text-2xl'> Bun venit înapoi! </CardTitle>
@@ -99,6 +92,11 @@ export default function LoginPage() {
 
                         </CardHeader>
                         <CardContent>
+                            {passwordReset && (
+                                <div className='mb-4 rounded-md bg-teal-50 p-3 text-sm text-teal-800 border border-teal-200'>
+                                    Parola a fost schimbată. Autentifică-te cu parola nouă.
+                                </div>
+                            )}
                             <form onSubmit={handleLogin} className='space-y-4'>
                                 <div className='space-y-2'>
                                     <Label htmlFor="email">Email</Label>
@@ -147,13 +145,13 @@ export default function LoginPage() {
                                     </div>
 
 
-                                    <Button className='bg-white text-teal-500 hover:bg-white hover:cursor-pointer'>Am uitat parola</Button>
+                                    <Link href='/forgot-password' className='text-sm font-medium text-teal-500 hover:text-teal-600'>Am uitat parola</Link>
 
                                 </div>
 
 
                                 {error && (
-                                    <div className='rounded-md bg-red-50 dark:bg-red950/50 p-3 text-sm text-red-800 dark: text-red-300 border border-red-200 dark:border-red-900'>{error}</div>
+                                    <div className='rounded-md bg-red-50 dark:bg-red-950/50 p-3 text-sm text-red-800 dark:text-red-300 border border-red-200 dark:border-red-900'>{error}</div>
                                 )}
                                 <Button
                                     type='submit'
@@ -164,23 +162,12 @@ export default function LoginPage() {
                                     {loading ? 'Se autentifică...' : 'Autentificare'}
                                 </Button>
                             </form>
+                            <p className='mt-6 text-center text-sm text-slate-500'>
+                                Clinica ta nu are cont?{' '}
+                                <Link href='/register' className='font-medium text-teal-500 hover:text-teal-600'>Creează unul</Link>
+                            </p>
                         </CardContent>
                     </Card>
-                </div>
-
-
-            </div>
-
-            <div className='hidden md:flex flex-col items-center justify-center bg-zinc-900 h-dvh md:w-1/2 p-12'>
-                <div className="w-max bg-teal-500/10 border border-teal-500/20 text-teal-500 text-lg p-2 rounded-2xl">
-                    <DentalToothIcon className='h-14 w-14' />
-                </div>
-                <h1 className='font-semibold text-2xl mt-8 text-white'>MediCare</h1>
-                <p className='text-center mt-3 text-zinc-500'>Sistem de management al clinicii dentare. <br className='hidden lg:block' /> Gestionează pacienți, programări și fișe <br className='hidden lg:block' /> medicale într-un singur loc.</p>
-
-            </div>
-        </div>
-
-
+        </AuthShell>
     );
 }

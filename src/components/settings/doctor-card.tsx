@@ -5,8 +5,11 @@ import { deleteDoctor } from "@/lib/actions/doctors";
 import { Category } from "@/lib/db/schema";
 import { doctorColor } from "@/lib/constants/doctor-colors";
 import { Button } from "@/components/ui/button";
-import { Pencil } from 'lucide-react';
-import { Trash } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
+import { ConfirmDialog } from '@/components/confirm-dialog';
+import { cn } from "@/lib/utils";
+import { formatDate } from "@/lib/format";
+import { pillClass } from "@/lib/ui-classes";
 import { DoctorForm } from "./doctor-form";
 import { toast } from "@/components/ui/toast";
 import { useState } from 'react';
@@ -19,6 +22,7 @@ interface DoctorCardProps {
 export const DoctorCard = ({ doctors, categories }: DoctorCardProps) => {
 
     const [pendingId, setPendingId] = useState<string | null>(null);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
     const handleToogleActive = async (doctor: Doctors, checked: boolean) => {
         setPendingId(doctor.id);
         try {
@@ -69,54 +73,64 @@ export const DoctorCard = ({ doctors, categories }: DoctorCardProps) => {
             })
         } finally {
             setPendingId(null);
+            setDeleteId(null);
         }
     }
+
+    const doctorToDelete = doctors.find((doctor) => doctor.id === deleteId);
+    const outlineButton = 'cursor-pointer border border-zinc-300 bg-white text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700';
 
     return (
         <div className="flex flex-col gap-4">
             {doctors.map((doctor) => (
-                <div className={` border-2 p-4 rounded-xl ${doctor.active ? 'border-zinc-300 text-zinc-600' : 'border-zinc-200/70 text-zinc-500/50'}`} key={doctor.id}>
-                    <div className="flex flex-col gap-2 group/item">
-                        <div>
-
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <div className="flex gap-4">
-                                <h2 className={`font-medium text-xl ${!doctor.active ? 'text-zinc-500' : ''}`}>Dr. {doctor.firstName} {doctor.lastName}</h2>
-                                {doctor.active ?
-                                    (<span className="px-3 py-1 rounded-full bg-teal-500/10 flex items-center gap-2 w-fit text-xs text-teal-600 font-medium"><div className="h-1.5 w-1.5 rounded-full bg-teal-500"></div>Activ</span>)
-                                    : (<span className="px-3 py-1 rounded-full bg-zinc-500/10 flex items-center gap-2 w-fit text-xs  font-medium"><div className="h-1.5 w-1.5 rounded-full bg-zinc-300"></div>Inactiv</span>)
-                                }
+                <div className={cn('group/item rounded-lg border bg-white p-4', doctor.active ? 'text-zinc-600' : 'text-zinc-400')} key={doctor.id}>
+                    <div className="flex flex-col gap-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex flex-wrap items-center gap-3">
+                                {/* „Nume Prenume”, ca în calendar, rapoarte și formulare */}
+                                <h2 className={cn('text-lg font-semibold', doctor.active ? 'text-zinc-900' : 'text-zinc-500')}>Dr. {doctor.lastName} {doctor.firstName}</h2>
+                                <span className={pillClass(doctor.active ? 'green' : 'neutral')}>{doctor.active ? 'Activ' : 'Inactiv'}</span>
                             </div>
-                            <div className="group/edit flex items-center gap-2 xl:invisible xl:group-hover/item:visible">
-                                <Button className='text-zinc-500 border border-zinc-300 bg-white group-hover/edit:text-zinc-700 hover:bg-zinc-100'
+                            <div className="flex items-center gap-2 xl:invisible xl:group-hover/item:visible xl:group-focus-within/item:visible">
+                                <Button className={outlineButton}
                                     disabled={pendingId === doctor.id}
                                     onClick={() => handleToogleActive(doctor, !doctor.active)}>{doctor.active ? 'Dezactivează' : 'Activează'}</Button>
-                                <DoctorForm trigger={<Button className='text-zinc-500 border border-zinc-300 bg-white group-hover/edit:text-zinc-700 hover:bg-zinc-100' > <Pencil /></Button>}
+                                <DoctorForm trigger={<Button className={outlineButton} title='Editează'><Pencil /></Button>}
                                     initialData={doctor}
                                     categories={categories}
                                     key={doctor.id} />
-                                <Button className='text-zinc-500 border border-zinc-300 bg-white group-hover/edit:text-red-400 hover:bg-zinc-100'
-                                    onClick={() => handleDelete(doctor.id)}
-                                    disabled={pendingId === doctor.id}> <Trash /></Button>
-
+                                <Button className={cn(outlineButton, 'hover:text-red-500')}
+                                    title='Șterge'
+                                    onClick={() => setDeleteId(doctor.id)}
+                                    disabled={pendingId === doctor.id}><Trash2 /></Button>
                             </div>
                         </div>
                         <p className="text-sm">{categories.find((cat) => cat.id === doctor.categoryId)?.name}</p>
-                        <div className="flex gap-4 text-sm">
-                            <p className={`${!doctor.phone ? 'hidden' : 'block'}`}>{doctor.phone}</p>
-                            <p className={`${!doctor.email ? 'hidden' : 'block'}`}>{doctor.email}</p>
-                            <p className={`${!doctor.hireDate ? 'hidden' : 'block'}`}>În echipă din {doctor.hireDate}</p>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                            {doctor.phone && <p className="tabular-nums">{doctor.phone}</p>}
+                            {doctor.email && <p>{doctor.email}</p>}
+                            {doctor.hireDate && <p>În echipă din {formatDate(doctor.hireDate)}</p>}
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className={`h-3 w-3 rounded-full `} style={{ backgroundColor: doctorColor.find((c) => c.value === doctor.color)?.hex }}> </div>
+                            <div className="h-3 w-3 rounded-full" style={{ backgroundColor: doctorColor.find((c) => c.value === doctor.color)?.hex }} />
                             <span className="text-sm">Culoare în calendar</span>
                         </div>
                     </div>
-
                 </div>
             ))}
 
+            {/* Confirmare înainte de ștergere, ca la pacienți, servicii și categorii */}
+            <ConfirmDialog
+                open={deleteId !== null}
+                onOpenChange={(open) => { if (!open) setDeleteId(null) }}
+                title='Ștergeți medicul?'
+                description={<>
+                    <span className="font-semibold">Dr. {doctorToDelete?.lastName} {doctorToDelete?.firstName}</span> va fi șters definitiv.
+                    Dacă nu mai lucrează în clinică, dar vreți să-i păstrați istoricul, dezactivați-l.
+                </>}
+                pending={deleteId !== null && pendingId === deleteId}
+                onConfirm={() => deleteId && handleDelete(deleteId)}
+            />
         </div>
     )
 }

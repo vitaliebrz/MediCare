@@ -12,19 +12,16 @@ import { checkCategoryUsage, deleteCategory } from "@/lib/actions/categories";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import type { Category } from "@/lib/db/schema";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogMedia,
-    AlertDialogFooter,
-} from "@/components/ui/alert-dialog"
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { useState } from "react";
 import { toast } from '@/components/ui/toast'
+import { formatDate } from '@/lib/format';
+import { CLINIC_TIME_ZONE } from '@/lib/dashboard-period';
+import { ICON_DELETE_BUTTON_CLASS, TABLE_HEAD_ROW_CLASS, TABLE_WRAPPER_CLASS } from '@/lib/ui-classes';
+
+// Ziua (AAAA-LL-ZZ) în fusul clinicii. 'sv-SE' dă mereu formatul ISO, deci serverul și browserul
+// afișează la fel (altfel limba browserului putea schimba textul și producea o eroare de hydration).
+const clinicDay = (date: Date) => date.toLocaleDateString('sv-SE', { timeZone: CLINIC_TIME_ZONE });
 
 interface CategoryTableProps {
     categories: Category[];
@@ -85,11 +82,13 @@ export const CategoryTable = ({ categories }: CategoryTableProps) => {
 
     }
 
+    const categoryToDelete = categories.find((category) => category.id === openId);
+
     return (
-        <div className="overflow-hidden rounded-md border">
+        <div className={TABLE_WRAPPER_CLASS}>
             <Table>
                 <TableHeader>
-                    <TableRow className="bg-zinc-300 hover:bg-zinc-300">
+                    <TableRow className={TABLE_HEAD_ROW_CLASS}>
                         <TableHead>Denumire</TableHead>
                         <TableHead>Data creării</TableHead>
                         <TableHead>Acțiuni</TableHead>
@@ -98,33 +97,30 @@ export const CategoryTable = ({ categories }: CategoryTableProps) => {
                 <TableBody>
                     {categories.map((category) => (
                         <TableRow key={category.id}>
-                            <TableCell>{category.name}</TableCell>
-                            <TableCell>{category.createdAt.toLocaleDateString('ro-MD', { timeZone: 'Europe/Chisinau' })} {category.createdAt.toLocaleTimeString('ro-MD', { timeZone: 'Europe/Chisinau' })}</TableCell>
+                            <TableCell className='font-medium'>{category.name}</TableCell>
+                            <TableCell className='tabular-nums'>{formatDate(clinicDay(category.createdAt))}</TableCell>
                             <TableCell>
-                                <Button className='cursor-pointer md:text-zinc-500  bg-red-200 text-red-500 md:bg-transparent hover:bg-red-200 md:hover:text-red-500'
+                                <Button className={ICON_DELETE_BUTTON_CLASS}
+                                    title='Șterge'
                                     onClick={() => handleDeleteClick(category.id)}
                                     disabled={pendingId === category.id}
                                 ><Trash2 /></Button>
-                                <AlertDialog open={openId === category.id} onOpenChange={(open) => { if (!open) setOpenId(null) }}>
-                                    <AlertDialogContent size="sm">
-                                        <AlertDialogHeader>
-                                            <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
-                                                <Trash2 />
-                                            </AlertDialogMedia>
-                                            <AlertDialogTitle>Ștergeți categoria?</AlertDialogTitle>
-                                            <AlertDialogDescription>Această acțiune va șterge definitiv categoria: <span className="font-semibold">{category.name}</span></AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel variant={'outline'}>Anulează</AlertDialogCancel>
-                                            <AlertDialogAction variant="destructive" onClick={() => handleDelete(category.id)} disabled={pendingId === category.id}>Ștergeți</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
+
                             </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
             </Table>
+
+            {/* Un singur dialog pentru tot tabelul, deschis pentru categoria aleasă */}
+            <ConfirmDialog
+                open={openId !== null}
+                onOpenChange={(open) => { if (!open) setOpenId(null) }}
+                title='Ștergeți categoria?'
+                description={<>Această acțiune va șterge definitiv categoria: <span className="font-semibold">{categoryToDelete?.name}</span></>}
+                pending={openId !== null && pendingId === openId}
+                onConfirm={() => openId && handleDelete(openId)}
+            />
         </div>
 
     )

@@ -7,7 +7,7 @@ import {
     DialogDescription,
     DialogTrigger
 } from '@/components/ui/dialog';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { doctorsSchema, type DoctorFormData } from '@/lib/validations/doctors';
 import { Label } from '@/components/ui/label';
@@ -37,7 +37,7 @@ interface DoctorFormProps {
     categories: Category[];
 }
 export const DoctorForm = ({ trigger, initialData, categories }: DoctorFormProps) => {
-    const { register, watch, control, reset, handleSubmit, formState: { errors } } = useForm<DoctorFormData>({
+    const { register, control, reset, handleSubmit, formState: { errors } } = useForm<DoctorFormData>({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: zodResolver(doctorsSchema) as any,
         defaultValues: {
@@ -91,6 +91,9 @@ export const DoctorForm = ({ trigger, initialData, categories }: DoctorFormProps
             return true
         }
     }
+    const [firstName, lastName, categoryId] = useWatch({ control, name: ['firstName', 'lastName', 'categoryId'] });
+    const requiredFilled = isEmptyField({ firstName: firstName ?? '', lastName: lastName ?? '', categoryId: categoryId ?? '' });
+
     useEffect(() => {
         if (initialData) {
             reset({
@@ -255,7 +258,7 @@ export const DoctorForm = ({ trigger, initialData, categories }: DoctorFormProps
                         {errorMessage && (
                             <p className='text-sm text-red-600'>{errorMessage}</p>
                         )}
-                        <Button type='submit' disabled={loading || !isEmptyField({ firstName: watch('firstName') ?? '', lastName: watch('lastName') ?? '', categoryId: watch('categoryId') ?? '' })} className={`bg-teal-500 hover:bg-teal-600 cursor-pointer ${isEmptyField({ firstName: watch('firstName') ?? '', lastName: watch('lastName') ?? '', categoryId: watch('categoryId') ?? '' }) ? '' : 'cursor-not-allowed'} `} >
+                        <Button type='submit' disabled={loading || !requiredFilled} className={`bg-teal-500 hover:bg-teal-600 cursor-pointer ${requiredFilled ? '' : 'cursor-not-allowed'} `} >
                             {loading && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
                             {success ? (
                                 <>Salvat<Check className='ml-2 h-4 w-4' /> </>

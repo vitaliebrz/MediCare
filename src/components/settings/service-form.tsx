@@ -43,7 +43,7 @@ export const ServiceForm = ({ trigger, initialData, categories, currency }: Serv
         resolver: zodResolver(servicesSchema) as any,
         defaultValues: {
             name: initialData ? initialData.name : '',
-            category: initialData ? initialData.category ?? '': '',
+            categoryId: initialData ? initialData.categoryId : '',
             description: initialData ? initialData.description ?? '' : '',
             price: initialData ? Number(initialData.price) : 0,
             durationMinutes: initialData ? initialData.durationMinutes ?? 5 : 5,
@@ -85,7 +85,7 @@ export const ServiceForm = ({ trigger, initialData, categories, currency }: Serv
         if (initialData) {
             reset({
                 name: initialData.name,
-                category: initialData.category ?? '',
+                categoryId: initialData.categoryId,
                 description: initialData.description ?? '',
                 price: Number(initialData.price),
                 durationMinutes: initialData.durationMinutes ?? 5,
@@ -118,19 +118,21 @@ export const ServiceForm = ({ trigger, initialData, categories, currency }: Serv
                         )}
                     </div>
                     <div className='flex flex-col gap-2'>
-                        <Label htmlFor='category'>Categorie<span className='text-red-500'>*</span></Label>
+                        <Label htmlFor='categoryId'>Categorie<span className='text-red-500'>*</span></Label>
                         <Controller
-                            name='category'
+                            name='categoryId'
                             control={control}
                             render={({ field }) => (
                                 <Select
                                     value={field.value} onValueChange={field.onChange}>
                                     <SelectTrigger className='w-full cursor-pointer'>
-                                        <SelectValue placeholder='Alege o categorie' />
+                                        <SelectValue placeholder='Alege o categorie' >
+                                            {categories.find((cat)=> cat.id === field.value)?.name}
+                                        </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent className='p-2 w-fit'>
                                         {categories.map((cat) => (
-                                            <SelectItem key={cat.id} value={cat.name}>
+                                            <SelectItem key={cat.id} value={cat.id}>
                                                 {cat.name}
                                             </SelectItem>
                                         ))}
@@ -140,8 +142,8 @@ export const ServiceForm = ({ trigger, initialData, categories, currency }: Serv
 
                         </Controller>
                         {
-                            errors.category && (
-                                <p className="text-sm text-red-600">{errors.category.message}</p>
+                            errors.categoryId && (
+                                <p className="text-sm text-red-600">{errors.categoryId.message}</p>
                             )
                         }
                     </div>

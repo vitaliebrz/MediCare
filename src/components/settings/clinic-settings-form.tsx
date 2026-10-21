@@ -26,21 +26,20 @@ export const ClinicSettingsForm = ({ initialData }: ClinicSettingsFormProps) => 
             address: initialData ? initialData.address ?? '' : '',
             phone: initialData ? initialData.phone ?? '' : '',
             email: initialData ? initialData.email ?? '' : '',
-            logoUrl: initialData ? initialData.logoUrl ?? '' : '',
-            workingHours: initialData ? initialData.workingHours ?? '' : '',
             currency: initialData ? initialData.currency : 'MDL',
-
+            // Postgres întoarce ora ca '08:00:00'; inputul type=time vrea '08:00'
+            dayStart: initialData ? initialData.dayStart.slice(0, 5) : '08:00',
+            dayEnd: initialData ? initialData.dayEnd.slice(0, 5) : '20:00',
         }
     })
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-    const id = initialData ? initialData.id ?? '' : '';
 
     const onSubmit = async (data: ClinicSettingsFormData) => {
         setLoading(true);
         setErrorMessage('');
-        const result = await updateClinicSettings(id, data);
+        const result = await updateClinicSettings(data);
         if (result.success) {
             setSuccess(true);
         } else {
@@ -107,27 +106,18 @@ export const ClinicSettingsForm = ({ initialData }: ClinicSettingsFormProps) => 
                                 <p className="text-sm text-red-600">{errors.email.message}</p>
                             )}
                         </div>
+                        {/* Programul de lucru = intervalul afișat în calendarul de programări */}
                         <div className='flex flex-col gap-2'>
-                            <Label htmlFor='logoUrl' className='text-zinc-500'>Logo clinică</Label>
-                            <Input
-                                type='url'
-                                placeholder='image'
-                                id='logoUrl'
-                                {...register('logoUrl')}></Input>
-                            {errors.logoUrl && (
-                                <p className="text-sm text-red-600">{errors.logoUrl.message}</p>
+                            <Label className='text-zinc-500'>Program de lucru</Label>
+                            <div className='flex items-center gap-2'>
+                                <Input type='time' step={900} aria-label='Ora de început' {...register('dayStart')} />
+                                <span className='text-zinc-400'>–</span>
+                                <Input type='time' step={900} aria-label='Ora de sfârșit' {...register('dayEnd')} />
+                            </div>
+                            {(errors.dayStart || errors.dayEnd) && (
+                                <p className="text-sm text-red-600">{errors.dayStart?.message ?? errors.dayEnd?.message}</p>
                             )}
-                        </div>
-                        <div className='flex flex-col gap-2'>
-                            <Label htmlFor='workingHours' className='text-zinc-500'>Program de lucru</Label>
-                            <p>Luni- Vineri</p>
-                            <Input type='text'
-                                id='workingHours'
-                                placeholder='08:00 - 18:00'
-                                {...register('workingHours')}></Input>
-                            {errors.workingHours && (
-                                <p className="text-sm text-red-600">{errors.workingHours.message}</p>
-                            )}
+                            <p className='text-xs text-zinc-500'>Calendarul de programări afișează orele din acest interval.</p>
                         </div>
                         <div className='flex flex-col gap-2'>
                             <Label htmlFor='currency' className='text-zinc-500'>Valuta</Label>
