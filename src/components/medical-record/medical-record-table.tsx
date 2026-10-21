@@ -3,6 +3,7 @@ import { AlertTriangle, Download, Eye } from 'lucide-react';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { TABLE_HEAD_ROW_CLASS, TABLE_WRAPPER_CLASS, pillClass } from '@/lib/ui-classes';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { getPatients } from '@/lib/actions/patient';
 
@@ -37,10 +38,10 @@ interface MedicalRecordTableProps {
 }
 
 export const MedicalRecordTable = ({ patients, totals, totalPatients, currency }: MedicalRecordTableProps) => (
-    <div className='overflow-x-auto rounded-md border bg-white'>
+    <div className={TABLE_WRAPPER_CLASS}>
         <Table>
             <TableHeader>
-                <TableRow className='bg-zinc-300 hover:bg-zinc-300'>
+                <TableRow className={TABLE_HEAD_ROW_CLASS}>
                     <TableHead className='w-16'>Nr. fișă</TableHead>
                     <TableHead>Pacient</TableHead>
                     <TableHead>IDNP</TableHead>
@@ -65,7 +66,7 @@ export const MedicalRecordTable = ({ patients, totals, totalPatients, currency }
                             {patient.idnp ?? (
                                 // Fișa se poate genera, dar IDNP-ul ar trebui completat înainte de printare
                                 <span
-                                    className='inline-flex items-center gap-1 rounded-xl bg-amber-100 px-2 py-1 text-xs text-amber-700'
+                                    className={pillClass('amber')}
                                     title='Completează IDNP-ul în fișa pacientului înainte de printare'
                                 >
                                     <AlertTriangle className='h-3 w-3' /> Date incomplete

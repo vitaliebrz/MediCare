@@ -6,7 +6,7 @@
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { getAvailableMonths, resolvePeriod, todayInClinic, type DashboardPeriod } from '@/lib/dashboard-period';
-import { localDate, localDateUtc, num, TZ } from '@/lib/db/sql-helpers';
+import { getClinicCreatedOn, localDate, localDateUtc, num, TZ } from '@/lib/db/sql-helpers';
 import type { AppointmentStatus } from '@/lib/db/schema';
 
 // Toate agregările se fac în SQL; helperii pentru ziua locală sunt în sql-helpers.ts
@@ -173,9 +173,7 @@ async function getRecentActivity(clinicId: string, limit = 6): Promise<ActivityI
 
 // `today` se poate da explicit (pentru teste); implicit e ziua curentă în ora Chișinăului
 export async function getDashboardDataForClinic(clinicId: string, periodKey: string | undefined, today = todayInClinic()) {
-    const [clinic] = await db.execute(sql`
-        select to_char(${localDateUtc('created_at')}, 'YYYY-MM-DD') as created_on from clinics where id = ${clinicId}`);
-    const clinicCreatedOn = String(clinic.created_on);
+    const clinicCreatedOn = await getClinicCreatedOn(clinicId);
     const period = resolvePeriod(periodKey, clinicCreatedOn, today);
 
     const [kpis, revenueSeries, topTreatments, todayAppointments, recentActivity] = await Promise.all([

@@ -3,6 +3,7 @@ import { Download } from 'lucide-react';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { TABLE_HEAD_ROW_CLASS } from '@/lib/ui-classes';
 import { formatCell, isNumeric } from '@/lib/reports/format';
 import type { ReportTable } from '@/lib/reports/types';
 
@@ -32,7 +33,7 @@ export const ReportTableCard = ({ table, currency, csvHref, children }: {
             <div className='overflow-x-auto rounded-md border'>
                 <Table>
                     <TableHeader>
-                        <TableRow className='bg-zinc-100 hover:bg-zinc-100'>
+                        <TableRow className={TABLE_HEAD_ROW_CLASS}>
                             {table.columns.map((column) => (
                                 <TableHead key={column.key} className={cn(isNumeric(column.format) && 'text-right')}>{column.label}</TableHead>
                             ))}

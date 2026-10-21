@@ -3,17 +3,7 @@
 import { useState } from 'react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogMedia,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
@@ -146,29 +136,14 @@ export const TreatmentHistory = ({ treatments, ...formOptions }: TreatmentHistor
                 </div>
             )}
 
-            <AlertDialog open={deleteId !== null} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
-                <AlertDialogContent size='sm'>
-                    <AlertDialogHeader>
-                        <AlertDialogMedia className='bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive'>
-                            <Trash2 />
-                        </AlertDialogMedia>
-                        <AlertDialogTitle>Ștergeți tratamentul?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Tratamentul va fi șters definitiv din istoric. Starea dintelui din schemă nu se modifică.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel variant='outline'>Anulează</AlertDialogCancel>
-                        <AlertDialogAction
-                            variant='destructive'
-                            disabled={pendingId === deleteId}
-                            onClick={() => deleteId && handleDelete(deleteId)}
-                        >
-                            Ștergeți
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <ConfirmDialog
+                open={deleteId !== null}
+                onOpenChange={(open) => { if (!open) setDeleteId(null) }}
+                title='Ștergeți tratamentul?'
+                description='Tratamentul va fi șters definitiv din istoric. Starea dintelui din schemă nu se modifică.'
+                pending={deleteId !== null && pendingId === deleteId}
+                onConfirm={() => deleteId && handleDelete(deleteId)}
+            />
         </div>
     );
 };

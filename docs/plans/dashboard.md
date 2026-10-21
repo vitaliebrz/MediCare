@@ -37,7 +37,7 @@ Selectorul oferă lunile de la luna creării clinicii (`clinics.created_at`) pâ
 
 **De ce „aceleași zile” la luna curentă:** pe 15 octombrie, luna e pe jumătate. Comparată cu tot septembrie, ar părea mereu în scădere. Comparăm 1–15 octombrie cu 1–15 septembrie (metoda „month-to-date”).
 
-**Fus orar:** „azi”, începutul lunii și gruparea pe zile se calculează în `Europe/Chisinau`, nu în fusul serverului. Pe Netlify serverul rulează în UTC, iar o programare la 00:30 ora Chișinăului ar cădea în ziua anterioară.
+**Fus orar:** „azi”, începutul lunii și gruparea pe zile se calculează în `Europe/Chisinau`, nu în fusul serverului. Pe Vercel serverul rulează în UTC, iar o programare la 00:30 ora Chișinăului ar cădea în ziua anterioară.
 
 ## Cifre-cheie
 

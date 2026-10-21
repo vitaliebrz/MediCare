@@ -23,7 +23,7 @@ import type { Doctors, Service } from '@/lib/db/schema';
 import { treatmentSchema, type TreatmentFormData } from '@/lib/validations/treatment';
 import { createTreatment, updateTreatment, type TreatmentRow } from '@/lib/actions/treatments';
 import type { TreatmentPrefill } from '@/lib/actions/appointments';
-import { formatDate } from '@/lib/format';
+import { formatDate, formatMoney } from '@/lib/format';
 import { ALL_TEETH, TOOTH_STATUS, TOOTH_STATUS_VALUES, toothName } from '@/lib/teeth';
 
 export interface TreatmentFormOptions {
@@ -227,7 +227,7 @@ export const TreatmentForm = ({ patientId, doctors, services, currency, prefill,
                                         <SelectContent>
                                             {serviceOptions.map((service) => (
                                                 <SelectItem key={service.id} value={service.id}>
-                                                    {service.name} · {service.price} {currency}
+                                                    {service.name} · {formatMoney(service.price, currency)}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>

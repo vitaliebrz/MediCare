@@ -44,11 +44,7 @@ export async function getPatients({ q = '', status = 'activ', page = 1, withTota
 
     const where = and(...conditions);
 
-    const [{ total }] = await db.select({ total: count() }).from(patients).where(where);
-    const totalPages = Math.max(1, Math.ceil(total / PATIENTS_PER_PAGE));
-    const currentPage = Math.min(Math.max(1, page), totalPages);
-
-    const rows = await db
+    const selectRows = (pageNumber: number) => db
         .select({
             ...getTableColumns(patients),
             // Pentru lista de fișe medicale: ultimul tratament și câte tratamente are pacientul
@@ -62,19 +58,28 @@ export async function getPatients({ q = '', status = 'activ', page = 1, withTota
         .where(where)
         .orderBy(desc(patients.createdAt))
         .limit(PATIENTS_PER_PAGE)
-        .offset((currentPage - 1) * PATIENTS_PER_PAGE);
+        .offset((pageNumber - 1) * PATIENTS_PER_PAGE);
 
-    // Aceeași condiție (căutare + status) ca lista, dar fără paginare
-    const [totals] = withTotals
-        ? await db
-            .select({
+    // Numărarea, rândurile paginii cerute și totalurile pornesc împreună (înainte: una după alta).
+    // Totalurile au aceeași condiție (căutare + status) ca lista, dar fără paginare.
+    const requestedPage = Math.max(1, page);
+    const [[{ total }], requestedRows, [totals]] = await Promise.all([
+        db.select({ total: count() }).from(patients).where(where),
+        selectRows(requestedPage),
+        withTotals
+            ? db.select({
                 cost: sql<number>`coalesce(sum(${treatments.price}), 0)::float8`,
                 paid: sql<number>`coalesce(sum(${treatments.price}) filter (where ${treatments.paid}), 0)::float8`,
             })
-            .from(treatments)
-            .innerJoin(patients, eq(treatments.patientId, patients.id))
-            .where(where)
-        : [null];
+                .from(treatments)
+                .innerJoin(patients, eq(treatments.patientId, patients.id))
+                .where(where)
+            : Promise.resolve([null]),
+    ]);
+    const totalPages = Math.max(1, Math.ceil(total / PATIENTS_PER_PAGE));
+    const currentPage = Math.min(requestedPage, totalPages);
+    // Pagina cerută nu există (ex. ?page=99 din URL): luăm ultima pagină reală (caz rar, o cerere în plus)
+    const rows = currentPage === requestedPage ? requestedRows : await selectRows(currentPage);
 
     return {
         patients: rows,

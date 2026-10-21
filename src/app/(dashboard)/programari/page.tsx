@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { getClinicSettings } from '@/lib/actions/clinic-settings';
 import { getDoctors } from '@/lib/actions/doctors';
 import { getServices } from '@/lib/actions/services';
@@ -5,6 +6,8 @@ import { getCategories } from '@/lib/actions/categories';
 import { getAppointments } from '@/lib/actions/appointments';
 import { resolveCalendarView } from '@/lib/calendar';
 import { todayInClinic } from '@/lib/dashboard-period';
+import { PAGE_CLASS } from '@/lib/ui-classes';
+import { PageHeader } from '@/components/page-header';
 import { AppointmentsCalendar } from '@/components/appointments/appointments-calendar';
 
 export default async function ProgramariPage({
@@ -17,20 +20,25 @@ export default async function ProgramariPage({
     const today = todayInClinic();
     const calendar = resolveCalendarView(params, today);
 
-    const [clinic, doctors, services, categories] = await Promise.all([
+    // Medicul din URL, dacă arată ca un id valid (altfel Postgres ar da eroare la comparația cu uuid)
+    const requested = z.uuid().safeParse(params.medic).success ? params.medic : undefined;
+    // Toate pornesc împreună. getAppointments filtrează pe clinică, deci un medic străin dă doar o listă goală.
+    const [clinic, doctors, services, categories, filtered] = await Promise.all([
         getClinicSettings(),
         getDoctors(),
         getServices(),
         getCategories(),
+        getAppointments({ from: calendar.from, to: calendar.to, doctorId: requested }),
     ]);
-    // Filtrul de medic e valid doar dacă medicul e al clinicii
-    const doctorId = doctors.some((doctor) => doctor.id === params.medic) ? params.medic : undefined;
-    const appointments = await getAppointments({ from: calendar.from, to: calendar.to, doctorId });
+    // Filtrul e valid doar dacă medicul e al clinicii; altfel (URL modificat) cerem toate programările
+    const doctorId = requested && doctors.some((doctor) => doctor.id === requested) ? requested : undefined;
+    const appointments = requested && !doctorId
+        ? await getAppointments({ from: calendar.from, to: calendar.to })
+        : filtered;
 
     return (
-        <div className='p-4 md:p-8 flex flex-col gap-4'>
-            <p className='text-slate-500 mt-2'>{clinic?.clinicName ?? 'Clinica'}/Programări</p>
-            <h1 className='text-2xl font-bold'>Programări</h1>
+        <div className={PAGE_CLASS}>
+            <PageHeader clinicName={clinic?.clinicName} trail={[{ label: 'Programări' }]} title='Programări' />
             <AppointmentsCalendar
                 calendar={calendar}
                 today={today}

@@ -20,14 +20,13 @@ export async function getPatientChart(patientId: string) {
     // Un id care nu e uuid ar da eroare în Postgres; îl tratăm ca "nu există"
     if (!z.uuid().safeParse(patientId).success) return null;
 
-    const [patient] = await db
-        .select()
-        .from(patients)
-        .where(and(eq(patients.id, patientId), eq(patients.clinicId, clinicId)))
-        .limit(1);
-    if (!patient) return null;
-
-    const [teeth, history] = await Promise.all([
+    // Toate trei pornesc împreună (nu una după alta): fiecare filtrează pe clinică,
+    // deci pentru un pacient al altei clinici dinții și tratamentele vin goale, iar funcția întoarce null
+    const [[patient], teeth, history] = await Promise.all([
+        db.select()
+            .from(patients)
+            .where(and(eq(patients.id, patientId), eq(patients.clinicId, clinicId)))
+            .limit(1),
         db.select({ toothNumber: teethStatus.toothNumber, status: teethStatus.status })
             .from(teethStatus)
             .where(and(eq(teethStatus.patientId, patientId), eq(teethStatus.clinicId, clinicId))),
@@ -44,6 +43,7 @@ export async function getPatientChart(patientId: string) {
             .where(and(eq(treatments.patientId, patientId), eq(treatments.clinicId, clinicId)))
             .orderBy(desc(treatments.performedAt), desc(treatments.createdAt)),
     ]);
+    if (!patient) return null;
 
     return { patient, teeth, treatments: history };
 }

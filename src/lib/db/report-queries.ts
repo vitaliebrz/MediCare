@@ -10,7 +10,7 @@
 import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { getAvailableMonths, resolvePeriod, todayInClinic, type DashboardPeriod } from '@/lib/dashboard-period';
-import { localDate, localDateUtc, num, TZ } from '@/lib/db/sql-helpers';
+import { getClinicCreatedOn, getRecallPatients, localDate, localDateUtc, num, RECALL_MONTHS, TZ, UNPAID } from '@/lib/db/sql-helpers';
 import type { ReportBase, ReportKind, ReportTable } from '@/lib/reports/types';
 import { WEEKDAYS_SHORT } from '@/lib/calendar';
 
@@ -25,8 +25,6 @@ interface ReportContext {
 const performedIn = (ctx: ReportContext) => sql`t.performed_at between ${ctx.period.from}::date and ${ctx.period.to}::date`;
 const paidIn = (ctx: ReportContext) => sql`${localDate('t.paid_at')} between ${ctx.period.from}::date and ${ctx.period.to}::date`;
 const byDoctor = (ctx: ReportContext, column = 't.doctor_id'): SQL => (ctx.doctorId ? sql`and ${sql.raw(column)} = ${ctx.doctorId}` : sql``);
-// O datorie = tratament neachitat cu preț (tratamentele gratuite nu sunt datorii)
-const UNPAID = sql.raw('not t.paid and coalesce(t.price, 0) > 0');
 
 const percent = (part: number, whole: number) => (whole > 0 ? (part / whole) * 100 : 0);
 
@@ -458,7 +456,6 @@ const STATUS_COLUMNS = [
     { key: 'anulat', label: 'Anulat' },
     { key: 'neprezentat', label: 'Neprezentat' },
 ] as const;
-const RECALL_MONTHS = 6;
 
 async function getAppointmentsReport(ctx: ReportContext) {
     const { clinicId, period, today } = ctx;
@@ -505,24 +502,8 @@ async function getAppointmentsReport(ctx: ReportContext) {
             where p.clinic_id = ${clinicId}
             group by 1`),
 
-        // De rechemat: pacienți activi a căror ultimă vizită (tratament sau programare finalizată)
-        // e mai veche de 6 luni și care nu au nicio programare viitoare
-        db.execute(sql`
-            select p.id, p.record_number, p.last_name || ' ' || p.first_name as name, p.phone, v.last_visit::text as last_visit,
-                (extract(year from age(${today}::date, v.last_visit)) * 12 + extract(month from age(${today}::date, v.last_visit))) as months
-            from patients p
-            join lateral (
-                select greatest(
-                    (select max(t.performed_at) from treatments t where t.patient_id = p.id),
-                    (select max(${localDate('a.starts_at')}) from appointments a where a.patient_id = p.id and a.status = 'finalizat')
-                ) as last_visit
-            ) v on true
-            where p.clinic_id = ${clinicId} and p.status = 'activ'
-                and v.last_visit < ${today}::date - interval '${sql.raw(String(RECALL_MONTHS))} months'
-                and not exists (
-                    select 1 from appointments a
-                    where a.patient_id = p.id and a.starts_at > now() and a.status in ('programat', 'confirmat'))
-            order by v.last_visit`),
+        // De rechemat: aceeași interogare ca alerta din clopoțel (sql-helpers.ts)
+        getRecallPatients(clinicId, today, RECALL_MONTHS),
     ]);
 
     // --- Programări pe medic × status ---
@@ -646,9 +627,7 @@ export async function getReportForClinic(
     params: { kind: ReportKind; periodKey?: string; doctorId?: string },
     today = todayInClinic(),
 ) {
-    const [clinic] = await db.execute(sql`
-        select to_char(${localDateUtc('created_at')}, 'YYYY-MM-DD') as created_on from clinics where id = ${clinicId}`);
-    const clinicCreatedOn = String(clinic.created_on);
+    const clinicCreatedOn = await getClinicCreatedOn(clinicId);
     const ctx: ReportContext = { clinicId, period: resolvePeriod(params.periodKey, clinicCreatedOn, today), today, doctorId: params.doctorId };
     const months = getAvailableMonths(clinicCreatedOn, today);
 

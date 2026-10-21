@@ -11,20 +11,11 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogMedia,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { ICON_BUTTON_CLASS, ICON_DELETE_BUTTON_CLASS, TABLE_HEAD_ROW_CLASS, TABLE_WRAPPER_CLASS, pillClass } from '@/lib/ui-classes';
 import type { Patient } from '@/lib/db/schema';
 import { deletePatient, setPatientStatus } from '@/lib/actions/patient';
 import { calculateAge } from '@/lib/patient-age';
@@ -33,8 +24,6 @@ import { PatientForm } from './patientForm';
 interface PatientTableProps {
     patients: Patient[];
 }
-
-const iconButton = 'bg-transparent text-zinc-500 cursor-pointer hover:bg-teal-500/50 hover:text-white';
 
 export const PatientTable = ({ patients }: PatientTableProps) => {
     const [pendingId, setPendingId] = useState<string | null>(null);
@@ -70,10 +59,10 @@ export const PatientTable = ({ patients }: PatientTableProps) => {
     const patientToDelete = patients.find((patient) => patient.id === deleteId);
 
     return (
-        <div className='overflow-x-auto rounded-md border'>
+        <div className={TABLE_WRAPPER_CLASS}>
             <Table>
                 <TableHeader>
-                    <TableRow className='bg-zinc-300 hover:bg-zinc-300'>
+                    <TableRow className={TABLE_HEAD_ROW_CLASS}>
                         <TableHead>Pacient</TableHead>
                         <TableHead>IDNP</TableHead>
                         <TableHead>Telefon</TableHead>
@@ -98,20 +87,18 @@ export const PatientTable = ({ patients }: PatientTableProps) => {
                                 <TableCell className='tabular-nums'>
                                     {/* Fără IDNP = pacient creat rapid dintr-o programare */}
                                     {patient.idnp ?? (
-                                        <span className='px-2 py-1 rounded-xl text-xs bg-amber-100 text-amber-700'>Date incomplete</span>
+                                        <span className={pillClass('amber')}>Date incomplete</span>
                                     )}
                                 </TableCell>
                                 <TableCell className='tabular-nums'>{patient.phone}</TableCell>
                                 <TableCell>{age === null ? '—' : `${age} ani`}</TableCell>
                                 <TableCell>
-                                    <span className={cn('px-2 py-1 rounded-xl text-xs',
-                                        patient.category === 'copil' ? 'bg-teal-100 text-teal-700' : 'bg-zinc-500/20')}>
+                                    <span className={pillClass(patient.category === 'copil' ? 'teal' : 'neutral')}>
                                         {patient.category === 'copil' ? 'Copil' : 'Adult'}
                                     </span>
                                 </TableCell>
                                 <TableCell>
-                                    <span className={cn('px-2 py-1 rounded-xl text-xs',
-                                        isActive ? 'bg-green-100 text-green-700' : 'bg-zinc-200 text-zinc-500')}>
+                                    <span className={pillClass(isActive ? 'green' : 'neutral')}>
                                         {isActive ? 'Activ' : 'Arhivat'}
                                     </span>
                                 </TableCell>
@@ -119,10 +106,10 @@ export const PatientTable = ({ patients }: PatientTableProps) => {
                                     <div className='flex gap-2'>
                                         <PatientForm
                                             initialData={patient}
-                                            trigger={<Button className={iconButton} title='Editează'><Pencil /></Button>}
+                                            trigger={<Button className={ICON_BUTTON_CLASS} title='Editează'><Pencil /></Button>}
                                         />
                                         <Button
-                                            className={iconButton}
+                                            className={ICON_BUTTON_CLASS}
                                             title={isActive ? 'Arhivează' : 'Reactivează'}
                                             disabled={pendingId === patient.id}
                                             onClick={() => handleToggleStatus(patient)}
@@ -130,7 +117,7 @@ export const PatientTable = ({ patients }: PatientTableProps) => {
                                             {isActive ? <Archive /> : <ArchiveRestore />}
                                         </Button>
                                         <Button
-                                            className='cursor-pointer bg-transparent text-zinc-500 hover:bg-red-200 hover:text-red-500'
+                                            className={ICON_DELETE_BUTTON_CLASS}
                                             title='Șterge definitiv'
                                             disabled={pendingId === patient.id}
                                             onClick={() => setDeleteId(patient.id)}
@@ -146,31 +133,18 @@ export const PatientTable = ({ patients }: PatientTableProps) => {
             </Table>
 
             {/* Un singur dialog pentru tot tabelul, deschis pentru pacientul ales */}
-            <AlertDialog open={deleteId !== null} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
-                <AlertDialogContent size='sm'>
-                    <AlertDialogHeader>
-                        <AlertDialogMedia className='bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive'>
-                            <Trash2 />
-                        </AlertDialogMedia>
-                        <AlertDialogTitle>Ștergeți pacientul definitiv?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Se vor șterge definitiv{' '}
-                            <span className='font-semibold'>{patientToDelete?.lastName} {patientToDelete?.firstName}</span>
-                            {' '}și tot istoricul de tratamente. Dacă vreți doar să-l ascundeți din listă, folosiți „Arhivează”.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel variant='outline'>Anulează</AlertDialogCancel>
-                        <AlertDialogAction
-                            variant='destructive'
-                            disabled={pendingId === deleteId}
-                            onClick={() => deleteId && handleDelete(deleteId)}
-                        >
-                            Ștergeți
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <ConfirmDialog
+                open={deleteId !== null}
+                onOpenChange={(open) => { if (!open) setDeleteId(null) }}
+                title='Ștergeți pacientul definitiv?'
+                description={<>
+                    Se vor șterge definitiv{' '}
+                    <span className='font-semibold'>{patientToDelete?.lastName} {patientToDelete?.firstName}</span>
+                    {' '}și tot istoricul de tratamente. Dacă vreți doar să-l ascundeți din listă, folosiți „Arhivează”.
+                </>}
+                pending={deleteId !== null && pendingId === deleteId}
+                onConfirm={() => deleteId && handleDelete(deleteId)}
+            />
         </div>
     );
 };

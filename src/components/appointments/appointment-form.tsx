@@ -5,17 +5,7 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Check, Clock, Loader2, Search, Trash2, UserPlus, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogMedia,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -296,26 +286,14 @@ export const AppointmentForm = ({ open, onOpenChange, appointment, defaults, doc
                     </div>
                 </form>
 
-                <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
-                    <AlertDialogContent size='sm'>
-                        <AlertDialogHeader>
-                            <AlertDialogMedia className='bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive'>
-                                <Trash2 />
-                            </AlertDialogMedia>
-                            <AlertDialogTitle>Ștergeți programarea?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Programarea va fi ștearsă definitiv. Dacă pacientul doar nu vine, alegeți statusul „Anulat” sau „Neprezentat”.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel variant='outline'>Renunță</AlertDialogCancel>
-                            <AlertDialogAction variant='destructive' disabled={deleting} onClick={handleDelete}>
-                                {deleting && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-                                Șterge
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <ConfirmDialog
+                    open={confirmDelete}
+                    onOpenChange={setConfirmDelete}
+                    title='Ștergeți programarea?'
+                    description='Programarea va fi ștearsă definitiv. Dacă pacientul doar nu vine, alegeți statusul „Anulat” sau „Neprezentat”.'
+                    pending={deleting}
+                    onConfirm={handleDelete}
+                />
             </DialogContent>
         </Dialog>
     );

@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "MediCare - Sistem Cabinet Stomatologic",
-  description: "Aplica'ie de gestiune pentru Cabinet Stomatologic",
+  description: "Aplicație de gestiune pentru Cabinet Stomatologic",
 };
 const poppins = Poppins({
   subsets: ['latin'],
@@ -27,7 +27,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ro">
+    // suppressHydrationWarning: extensiile de browser (ex. LanguageTool, Grammarly) adaugă atribute
+    // pe <html> înainte să pornească React -> eroare de hydration falsă. Se aplică doar acestui element.
+    <html lang="ro" suppressHydrationWarning>
       <body className={`${poppins.variable} ${geistMono.variable} antialiased`}>
         <TooltipProvider>
           {children}

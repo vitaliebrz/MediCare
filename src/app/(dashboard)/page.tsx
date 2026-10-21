@@ -3,6 +3,8 @@ import { getDashboardData } from '@/lib/actions/dashboard';
 import { getClinicSettings } from '@/lib/actions/clinic-settings';
 import { percentChange } from '@/lib/percent-change';
 import { formatMoney } from '@/lib/format';
+import { PAGE_CLASS } from '@/lib/ui-classes';
+import { PageHeader } from '@/components/page-header';
 import { StatCard } from '@/components/dashboard/stat-card';
 import { PeriodSelect } from '@/components/dashboard/period-select';
 import { RevenueChart } from '@/components/dashboard/revenue-chart';
@@ -23,14 +25,13 @@ export default async function DashboardPage({
     const periodTotal = data.revenueSeries.reduce((sum, point) => sum + point.total, 0);
 
     return (
-        <div className='p-4 md:p-8 flex flex-col gap-4'>
-            <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-                <div>
-                    <p className='text-slate-500'>{clinic?.clinicName ?? 'Clinica'}</p>
-                    <h1 className='text-2xl font-bold'>Dashboard</h1>
-                </div>
-                <PeriodSelect value={period.key} label={period.label} months={data.months} />
-            </div>
+        <div className={PAGE_CLASS}>
+            <PageHeader
+                clinicName={clinic?.clinicName}
+                trail={[{ label: 'Dashboard' }]}
+                title='Dashboard'
+                action={<PeriodSelect value={period.key} label={period.label} months={data.months} />}
+            />
 
             {/* Cifre-cheie */}
             <div className='grid grid-cols-2 gap-3 lg:grid-cols-4'>

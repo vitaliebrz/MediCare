@@ -6,7 +6,9 @@ const PUBLIC_ROUTES = ['/login', '/register', '/forgot-password'];
 // Accesibile oricui: aici utilizatorul încă nu are sesiune, dar o va primi.
 const AUTH_FLOW_ROUTES = ['/auth/confirm'];
 
-export async function middleware(request: NextRequest) {
+// Proxy (fostul „middleware”, redenumit în Next 16): rulează înaintea fiecărei pagini.
+// Reîmprospătează sesiunea Supabase (cookie-urile) și trimite la /login pe cine nu e logat.
+export async function proxy(request: NextRequest) {
     let response = NextResponse.next({ request });
 
     const supabase = createServerClient(
@@ -30,7 +32,11 @@ export async function middleware(request: NextRequest) {
         }
     );
 
-    const { data: { user } } = await supabase.auth.getUser();
+    // getClaims verifică LOCAL semnătura tokenului (cheia publică ES256 a proiectului, ținută în memorie),
+    // în ~3 ms. getUser() întreba de fiecare dată serverul Supabase (180–700 ms la fiecare click).
+    // Dacă tokenul a expirat, getClaims îl reîmprospătează și actualizează cookie-urile (setAll de mai sus).
+    const { data } = await supabase.auth.getClaims();
+    const user = data?.claims?.sub ? data.claims : null;
 
     const { pathname } = request.nextUrl;
     if (AUTH_FLOW_ROUTES.some((route) => pathname.startsWith(route))) {

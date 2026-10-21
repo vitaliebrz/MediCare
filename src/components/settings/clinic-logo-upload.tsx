@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
 import { removeClinicLogo, uploadClinicLogo } from '@/lib/actions/clinic-settings';
 import { LOGO_TYPES, MAX_LOGO_BYTES } from '@/lib/clinic-logo';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 
 // Logo-ul clinicii: se salvează imediat ce e ales (separat de formularul cu datele clinicii).
 // Apare în PDF-uri (fișa 043/e, rapoarte) și în antetul paginii Rapoarte.
@@ -15,6 +16,7 @@ export const ClinicLogoUpload = ({ logoUrl }: { logoUrl: string | null }) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState('');
+    const [confirmRemove, setConfirmRemove] = useState(false);
 
     const handleFile = (file: File | undefined) => {
         if (!file) return;
@@ -37,6 +39,7 @@ export const ClinicLogoUpload = ({ logoUrl }: { logoUrl: string | null }) => {
         setError('');
         startTransition(async () => {
             const result = await removeClinicLogo();
+            setConfirmRemove(false);
             if (!result.success) setError(result.error ?? '');
             else toast.add({ title: 'Logo șters', type: 'success' });
         });
@@ -74,13 +77,22 @@ export const ClinicLogoUpload = ({ logoUrl }: { logoUrl: string | null }) => {
                             {logoUrl ? 'Schimbă logo-ul' : 'Încarcă logo'}
                         </Button>
                         {logoUrl && (
-                            <Button type='button' variant='outline' disabled={isPending} onClick={handleRemove} className='gap-2 text-red-600 cursor-pointer'>
+                            <Button type='button' variant='outline' disabled={isPending} onClick={() => setConfirmRemove(true)} className='gap-2 text-red-600 cursor-pointer'>
                                 <Trash2 className='h-4 w-4' /> Șterge
                             </Button>
                         )}
                     </div>
                 </div>
                 {error && <p className='text-sm text-red-600'>{error}</p>}
+
+                <ConfirmDialog
+                    open={confirmRemove}
+                    onOpenChange={setConfirmRemove}
+                    title='Ștergeți logo-ul?'
+                    description='Logo-ul nu va mai apărea în fișele medicale și în rapoarte. Puteți încărca oricând altul.'
+                    pending={isPending}
+                    onConfirm={handleRemove}
+                />
             </CardContent>
         </Card>
     );

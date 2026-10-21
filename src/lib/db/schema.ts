@@ -62,6 +62,25 @@ export const users = pgTable('users', {
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }).enableRLS()
 
+//============================================
+// Tabel: Setările de notificări ale fiecărui utilizator
+// Alertele nu se salvează: se calculează din date la cerere (src/lib/db/notification-queries.ts).
+// Aici e doar ce alerte vrea să vadă utilizatorul. Fără rând = valorile implicite (toate active).
+//============================================
+
+export const notificationSettings = pgTable('notification_settings', {
+    userId: uuid('user_id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
+    unconfirmedAppointments: boolean('unconfirmed_appointments').notNull().default(true),
+    pendingAppointments: boolean('pending_appointments').notNull().default(true), // ora a trecut, fără status final
+    oldDebts: boolean('old_debts').notNull().default(true),
+    debtDays: integer('debt_days').notNull().default(30),
+    incompleteData: boolean('incomplete_data').notNull().default(true),
+    recall: boolean('recall').notNull().default(true),
+    recallMonths: integer('recall_months').notNull().default(6),
+    birthdays: boolean('birthdays').notNull().default(true),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}).enableRLS()
+
 // ==========================================
 // Tabel: Patients (pacienți)
 // ==========================================
@@ -333,3 +352,4 @@ export type AppointmentStatus = (typeof appointmentStatusEnum.enumValues)[number
 export type ToothStatusValue = (typeof toothStatusEnum.enumValues)[number];
 export type Color = (typeof doctorColorEnum.enumValues)[number];
 export type Doctors = typeof doctors.$inferSelect;
+export type NotificationSettings = typeof notificationSettings.$inferSelect;

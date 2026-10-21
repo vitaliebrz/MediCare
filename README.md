@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MediCare: gestiunea unui cabinet stomatologic
 
-## Getting Started
+Aplicație web pentru un cabinet stomatologic: pacienți, programări, schema dentară, tratamente, fișe medicale (Formular 043/e) și rapoarte.
 
-First, run the development server:
+> Proiect personal de învățare. Datele demonstrative sunt inventate; aplicația nu conține date reale ale pacienților.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Ce face
+- **Dashboard**: pacienți, programări, venit și datorii pe perioadă, programările de azi, activitatea recentă.
+- **Pacienți**: listă cu căutare, fișa pacientului cu schema dentară (adult / copil, notația FDI), istoric de tratamente și plăți.
+- **Programări**: calendar pe zi și pe săptămână, pe medici. Durata vine din serviciu. Un pacient nou se poate crea direct din programare.
+- **Fișe medicale**: Formularul 043/e în PDF, gata de printat.
+- **Rapoarte**: financiar și datorii, medici, servicii, programări și pacienți, cu export CSV (Excel) și PDF.
+- **Notificări**: alerte calculate din date (programări neconfirmate, datorii vechi, pacienți de rechemat...).
+- **Setări**: clinica (logo, program de lucru), categorii, servicii, medici, notificări, cont.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tehnologii
+- [Next.js 16](https://nextjs.org) (App Router, Server Actions), React 19, TypeScript
+- [Supabase](https://supabase.com): autentificare, Postgres, Storage
+- [Drizzle ORM](https://orm.drizzle.team) pentru baza de date
+- Tailwind CSS + shadcn/ui (Base UI), Recharts, `@react-pdf/renderer`
+- Găzduire: [Vercel](https://vercel.com) (regiunea `dub1`, lângă baza de date Supabase din `eu-west-1`)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Deciziile fiecărui modul sunt în [docs/plans](docs/plans/README.md).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Pornire locală
+1. `npm install`
+2. Copiază `.env.example` în `.env.local` și completează valorile din proiectul Supabase.
+3. `npm run db:push` creează tabelele în baza de date.
+4. `npm run dev`, apoi deschide http://localhost:3000 și creează un cont (Înregistrare).
 
-## Learn More
+Pentru viteza reală (producție): `npm run preview`.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Publicare pe Vercel
+1. Pe [vercel.com](https://vercel.com): **Add New → Project**, importă acest repository. Framework-ul (Next.js) se detectează singur.
+2. În **Environment Variables** adaugă `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` și `DATABASE_URL` (vezi `.env.example`).
+3. **Deploy.** Fiecare push pe `main` publică automat o versiune nouă.
+4. În Supabase → **Authentication → URL Configuration**:
+   - pune adresa site-ului la **Site URL**;
+   - adaugă `https://<adresa-ta>.vercel.app/**` la **Redirect URLs**. Fără ea, linkul din emailul de resetare a parolei nu merge.

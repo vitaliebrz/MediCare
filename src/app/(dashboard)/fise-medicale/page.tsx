@@ -2,6 +2,9 @@ import { FileText } from 'lucide-react';
 import { getClinicSettings } from '@/lib/actions/clinic-settings';
 import { firstParam } from '@/lib/search-params';
 import { getPatients, type PatientStatusFilter } from '@/lib/actions/patient';
+import { PAGE_CLASS } from '@/lib/ui-classes';
+import { PageHeader } from '@/components/page-header';
+import { EmptyState } from '@/components/empty-state';
 import { PatientFilters } from '@/components/patients/patient-filters';
 import { PatientPagination } from '@/components/patients/patient-pagination';
 import { MedicalRecordTable } from '@/components/medical-record/medical-record-table';
@@ -28,15 +31,16 @@ export default async function FiseMedicalePage({
     ]);
 
     return (
-        <div className='p-4 md:p-8 flex flex-col gap-4'>
-            <p className='text-slate-500 mt-2'>{clinic?.clinicName ?? 'Clinica'}/Fișe medicale</p>
-            <div>
-                <h1 className='text-2xl font-bold'>Fișe medicale</h1>
-                <p className='text-sm text-slate-500'>
+        <div className={PAGE_CLASS}>
+            <PageHeader
+                clinicName={clinic?.clinicName}
+                trail={[{ label: 'Fișe medicale' }]}
+                title='Fișe medicale'
+                description={<>
                     Fișa medicală a bolnavului stomatologic (Formular 043/e), generată din datele pacientului.
                     Secțiunile fără date în aplicație se completează de mână după printare.
-                </p>
-            </div>
+                </>}
+            />
 
             <PatientFilters q={q} status={status} basePath={BASE_PATH} />
 
@@ -58,10 +62,11 @@ export default async function FiseMedicalePage({
                     />
                 </>
             ) : (
-                <div className='flex flex-col items-center gap-3 rounded-md border border-dashed bg-white py-16 text-center'>
-                    <FileText className='h-10 w-10 text-slate-300' />
-                    <p className='text-slate-500'>{q ? `Niciun rezultat pentru „${q}”.` : 'Niciun pacient în această listă.'}</p>
-                </div>
+                <EmptyState
+                    icon={FileText}
+                    title={q ? `Niciun rezultat pentru „${q}”` : 'Niciun pacient în această listă'}
+                    description={q ? 'Verifică numele, telefonul sau IDNP-ul.' : undefined}
+                />
             )}
         </div>
     );

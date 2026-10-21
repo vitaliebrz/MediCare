@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/toast';
-import { cn } from '@/lib/utils';
+import { pillClass } from '@/lib/ui-classes';
 import type { ToothStatusValue } from '@/lib/db/schema';
 import { setToothStatus, type TreatmentRow } from '@/lib/actions/treatments';
 import { TOOTH_STATUS, TOOTH_STATUS_VALUES, toothName } from '@/lib/teeth';
@@ -98,8 +98,7 @@ export const ToothPanel = ({ open, onOpenChange, tooth, status, treatments, ...f
                                                     <span>{treatment.doctorName ? `Dr. ${treatment.doctorName} ${treatment.doctorFirstName}` : 'Medic nespecificat'}</span>
                                                     <span className='flex items-center gap-2'>
                                                         {formatMoney(treatment.price, formOptions.currency)}
-                                                        <span className={cn('rounded-xl px-2 py-0.5',
-                                                            treatment.paid ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700')}>
+                                                        <span className={pillClass(treatment.paid ? 'green' : 'amber')}>
                                                             {treatment.paid ? 'Achitat' : 'Neachitat'}
                                                         </span>
                                                     </span>

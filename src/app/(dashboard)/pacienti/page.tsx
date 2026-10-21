@@ -2,6 +2,9 @@ import { Users } from 'lucide-react';
 import { getClinicSettings } from '@/lib/actions/clinic-settings';
 import { firstParam } from '@/lib/search-params';
 import { getPatients, type PatientStatusFilter } from '@/lib/actions/patient';
+import { PAGE_CLASS } from '@/lib/ui-classes';
+import { PageHeader } from '@/components/page-header';
+import { EmptyState } from '@/components/empty-state';
 import { AddPatientButton } from '@/components/patients/add-patient-button';
 import { PatientFilters } from '@/components/patients/patient-filters';
 import { PatientTable } from '@/components/patients/patient-table';
@@ -29,10 +32,9 @@ export default async function PacientiPage({
 
 
     return (
-        <div className='p-4 md:p-8 flex flex-col gap-4'>
-            <p className='text-slate-500 mt-2'>{clinic?.clinicName ?? 'Clinica'}/Pacienți</p>
+        <div className={PAGE_CLASS}>
             {/* Butonul „Pacient nou” e în topbar (merge de pe orice pagină), deci nu-l repetăm aici */}
-            <h1 className='text-2xl font-bold'>Pacienți</h1>
+            <PageHeader clinicName={clinic?.clinicName} trail={[{ label: 'Pacienți' }]} title='Pacienți' />
 
             <PatientFilters q={q} status={status} />
 
@@ -48,20 +50,13 @@ export default async function PacientiPage({
                     />
                 </>
             ) : (
-                <div className='flex flex-col items-center gap-3 rounded-md border border-dashed bg-white py-16 text-center'>
-                    <Users className='h-10 w-10 text-slate-300' />
-                    {q ? (
-                        <p className='text-slate-500'>Niciun rezultat pentru „{q}”.</p>
-                    ) : status === 'activ' ? (
-                        <>
-                            <p className='font-medium'>Niciun pacient încă</p>
-                            <p className='text-sm text-slate-500'>Adaugă primul pacient al clinicii.</p>
-                            <AddPatientButton />
-                        </>
-                    ) : (
-                        <p className='text-slate-500'>Niciun pacient {status === 'inactiv' ? 'arhivat' : ''}.</p>
-                    )}
-                </div>
+                q ? (
+                    <EmptyState icon={Users} title={`Niciun rezultat pentru „${q}”`} description='Verifică numele, telefonul sau IDNP-ul.' />
+                ) : status === 'activ' ? (
+                    <EmptyState icon={Users} title='Niciun pacient încă' description='Adaugă primul pacient al clinicii.' action={<AddPatientButton />} />
+                ) : (
+                    <EmptyState icon={Users} title={status === 'inactiv' ? 'Niciun pacient arhivat' : 'Niciun pacient'} />
+                )
             )}
         </div>
     );

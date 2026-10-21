@@ -93,7 +93,8 @@ export const Sidebar = ({ userEmail, userName, userRole }: SidebarProps) => {
             {/* Navigation */}
             <div className='p-5 flex flex-col gap-2 '>
                 {navItems.map((item) => {
-                    const isActive = pathname === item.href;
+                    // Activ și pe subpagini (ex. /pacienti/123 → Pacienți), ca în bara de jos de pe telefon
+                    const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
                     const Icon = item.icon;
                     return (
                         <Link key={item.href} href={item.href}>

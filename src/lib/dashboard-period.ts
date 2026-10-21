@@ -1,6 +1,6 @@
 // Perioada aleasă în dashboard (?perioada=) și perioada cu care se compară.
 // Toate datele sunt șiruri 'YYYY-MM-DD' în ora Chișinăului, ca rezultatul să nu depindă
-// de fusul orar al serverului (Netlify rulează în UTC). Vezi docs/plans/dashboard.md.
+// de fusul orar al serverului (Vercel rulează în UTC). Vezi docs/plans/dashboard.md.
 
 export const CLINIC_TIME_ZONE = 'Europe/Chisinau';
 

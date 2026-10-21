@@ -2,6 +2,8 @@ import Image from 'next/image';
 import { getReport } from '@/lib/actions/reports';
 import { getClinicSettings } from '@/lib/actions/clinic-settings';
 import { reportQuery, type ReportParams } from '@/lib/reports/params';
+import { PAGE_CLASS } from '@/lib/ui-classes';
+import { PageHeader } from '@/components/page-header';
 import { ReportFilters } from '@/components/reports/report-filters';
 import { ReportTabs } from '@/components/reports/report-tabs';
 import { ReportKpis } from '@/components/reports/report-kpis';
@@ -23,20 +25,17 @@ export default async function RapoartePage({
     const doctor = doctors.find((item) => item.id === doctorId);
 
     return (
-        <div className='p-4 md:p-8 flex flex-col gap-4'>
-            <div className='flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between'>
-                <div className='flex items-center gap-3'>
-                    {/* Logo-ul clinicii (din Setări → Clinică), ca în PDF-ul raportului */}
-                    {clinic?.logoUrl && (
-                        <Image src={clinic.logoUrl} alt={`Logo ${clinic.clinicName}`} width={48} height={48} className='h-12 w-12 rounded-md border bg-white object-contain' />
-                    )}
-                    <div>
-                        <p className='text-slate-500'>{clinic?.clinicName ?? 'Clinica'}/Rapoarte</p>
-                        <h1 className='text-2xl font-bold'>Rapoarte</h1>
-                    </div>
-                </div>
-                <ReportFilters params={params} periodLabel={report.period.label} months={months} doctors={doctors} />
-            </div>
+        <div className={PAGE_CLASS}>
+            <PageHeader
+                clinicName={clinic?.clinicName}
+                trail={[{ label: 'Rapoarte' }]}
+                title='Rapoarte'
+                // Logo-ul clinicii (din Setări → Clinică), ca în PDF-ul raportului
+                leading={clinic?.logoUrl && (
+                    <Image src={clinic.logoUrl} alt={`Logo ${clinic.clinicName}`} width={48} height={48} className='h-12 w-12 rounded-md border bg-white object-contain' />
+                )}
+                action={<ReportFilters params={params} periodLabel={report.period.label} months={months} doctors={doctors} />}
+            />
 
             <ReportTabs params={params} />
 

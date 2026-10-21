@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Bell, UserPlus, LogOut } from 'lucide-react';
+import { UserPlus, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -12,13 +12,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import DentalToothIcon from '@iconify-react/hugeicons/dental-tooth';
 import { PatientForm } from '../patients/patientForm';
+import { NotificationBell } from '../notifications/notification-bell';
+import type { AppNotification } from '@/lib/db/notification-queries';
 
 interface TopbarProps {
     userEmail: string;
     userName?: string;
+    notifications: Promise<AppNotification[]>;
 }
 
-export const Topbar = ({ userEmail, userName }: TopbarProps) => {
+export const Topbar = ({ userEmail, userName, notifications }: TopbarProps) => {
     const router = useRouter();
     const initials = (userName || userEmail)
         .split(' ')
@@ -56,10 +59,7 @@ export const Topbar = ({ userEmail, userName }: TopbarProps) => {
                         </Button>
                     } />
 
-                <Button className='relative bg-accent hover:bg-teal-200/50 hover:cursor-pointer'>
-                    <Bell className='text-zinc-500 hover:text-zinc-700' />
-                    <span className='absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-teal-500' />
-                </Button>
+                <NotificationBell notifications={notifications} />
 
                 <DropdownMenu>
                     <DropdownMenuTrigger className="md:hidden rounded-full">
