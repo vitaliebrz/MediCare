@@ -7,9 +7,12 @@ import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { getCurrentUser } from '@/lib/auth/current-user';
 import { createClient } from '@/lib/supabase/server';
+import { authAdmin } from '@/lib/supabase/admin';
 import {
+    changeEmailSchema,
     changePasswordSchema,
     profileSchema,
+    type ChangeEmailFormData,
     type ChangePasswordFormData,
     type ProfileFormData,
 } from '@/lib/validations/account';
@@ -32,6 +35,62 @@ export async function updateProfile(data: ProfileFormData) {
     return { success: true };
 }
 
+// Verifică parola curentă logând din nou utilizatorul. Cine găsește calculatorul deschis
+// nu poate schimba emailul sau parola fără s-o știe.
+// Întoarce și clientul: sesiunea tocmai verificată e în el (folosită apoi la schimbarea parolei).
+async function verifyCurrentPassword(email: string, password: string) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error) return { supabase, error: null };
+    return {
+        supabase,
+        error: error.code === 'invalid_credentials'
+            ? 'Parola curentă nu este corectă.'
+            : 'Nu am putut verifica parola. Încearcă din nou peste un minut.',
+    };
+}
+
+export async function changeEmail(data: ChangeEmailFormData) {
+    const { id, email: currentEmail } = await getCurrentUser();
+    const result = changeEmailSchema.safeParse(data);
+    if (!result.success) {
+        return { success: false, error: result.error.issues[0]?.message ?? 'Datele introduse nu sunt valide.' };
+    }
+    const { email, currentPassword } = result.data;
+    if (email === currentEmail.toLowerCase()) {
+        return { success: false, field: 'email' as const, error: 'Acesta este deja emailul tău.' };
+    }
+
+    const { error: passwordError } = await verifyCurrentPassword(currentEmail, currentPassword);
+    if (passwordError) return { success: false, field: 'currentPassword' as const, error: passwordError };
+
+    // Emailul e în două locuri: Supabase Auth (login) și tabelul users (afișare, clinică).
+    // Tranzacție: dacă Supabase refuză, modificarea din users se anulează și ele rămân la fel.
+    try {
+        await db.transaction(async (tx) => {
+            await tx.update(users).set({ email, updatedAt: new Date() }).where(eq(users.id, id));
+            const errorCode = await authAdmin.updateEmail(id, email);
+            if (errorCode) throw new Error(errorCode);
+        });
+    } catch (error) {
+        // Adresa e deja folosită dacă:
+        // - Supabase Auth răspunde 'email_exists' sau '23505' (codul Postgres pentru valoare duplicată, testat);
+        // - tabelul users dă 23505 (Drizzle învelește eroarea Postgres în `cause`, ca în patient.ts)
+        const authCode = error instanceof Error ? error.message : '';
+        const pgCode = (error as { cause?: { code?: string } })?.cause?.code;
+        const taken = authCode === 'email_exists' || authCode === '23505' || pgCode === '23505';
+        if (!taken) console.error('Change email error: ', error);
+        return {
+            success: false,
+            field: 'email' as const,
+            error: taken ? 'Există deja un cont cu acest email.' : 'Nu am putut schimba emailul. Încearcă din nou.',
+        };
+    }
+
+    revalidatePath('/', 'layout'); // emailul apare și în meniul de pe telefon
+    return { success: true };
+}
+
 export async function changePassword(data: ChangePasswordFormData) {
     const { email } = await getCurrentUser();
     const result = changePasswordSchema.safeParse(data);
@@ -39,22 +98,12 @@ export async function changePassword(data: ChangePasswordFormData) {
         return { success: false, error: result.error.issues[0]?.message ?? 'Datele introduse nu sunt valide.' };
     }
     const { currentPassword, password } = result.data;
-    const supabase = await createClient();
 
-    // 1. Parola curentă: o verificăm logând din nou utilizatorul. Cine găsește calculatorul
-    //    deschis nu poate schimba parola fără s-o știe pe cea veche.
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
-    if (signInError) {
-        return {
-            success: false,
-            field: 'currentPassword' as const,
-            error: signInError.code === 'invalid_credentials'
-                ? 'Parola curentă nu este corectă.'
-                : 'Nu am putut verifica parola. Încearcă din nou peste un minut.',
-        };
-    }
+    // 1. Parola curentă
+    const { supabase, error: passwordError } = await verifyCurrentPassword(email, currentPassword);
+    if (passwordError) return { success: false, field: 'currentPassword' as const, error: passwordError };
 
-    // 2. Parola nouă
+    // 2. Parola nouă, pe același client (are sesiunea tocmai verificată)
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {
         const messages: Record<string, string> = {

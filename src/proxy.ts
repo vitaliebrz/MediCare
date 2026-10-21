@@ -57,6 +57,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
     matcher: [
-        '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+        // Fișierele PWA (manifest, service worker, pagina offline) trebuie să se încarce și fără login:
+        // browserul le cere singur, iar o redirecționare la /login ar strica instalarea aplicației.
+        '/((?!api|_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|offline.html|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 };

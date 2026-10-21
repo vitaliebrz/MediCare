@@ -41,7 +41,12 @@ Alertele **nu se salvează și nu se trimit**: se calculează din date la fiecar
 - `src/app/(dashboard)/setari/notificari/page.tsx`
 
 ## Cont
-1. **Profil**: numele și telefonul se pot schimba. Emailul (folosit la login), rolul și clinica doar se afișează. Numele nou apare imediat și în meniu (`revalidatePath('/', 'layout')`).
+1. **Profil**: numele și telefonul se pot schimba. Rolul și clinica doar se afișează. Numele nou apare imediat și în meniu (`revalidatePath('/', 'layout')`).
+1. **Email de login** (adăugat după implementare, la cererea utilizatorului):
+   - cere emailul nou și parola curentă;
+   - schimbarea se aplică imediat, fără email de confirmare (`authAdmin.updateEmail` din `src/lib/supabase/admin.ts`, API-ul de administrare Supabase);
+   - tabelul `users` și Supabase Auth se modifică într-o tranzacție: dacă Supabase refuză, nici `users` nu se schimbă;
+   - o adresă deja folosită primește mesajul „Există deja un cont cu acest email” (Supabase răspunde cu codul `23505`).
 2. **Schimbă parola**:
    - întâi se verifică parola curentă (`signInWithPassword`), apoi se salvează cea nouă (`updateUser`);
    - mesajele sunt în română și apar sub câmpul greșit.
@@ -56,7 +61,7 @@ Dialogul de confirmare comun a devenit `ConfirmDialog` (`src/components/confirm-
 - `src/lib/actions/account.ts`
 - `src/lib/validations/account.ts`
 - `src/lib/constants/user-roles.ts`
-- `src/components/settings/`: `profile-form.tsx`, `password-form.tsx`, `security-card.tsx`
+- `src/components/settings/`: `profile-form.tsx`, `email-form.tsx`, `password-form.tsx`, `security-card.tsx`
 - `src/app/(dashboard)/setari/cont/page.tsx`
 
 ## Verificat
@@ -76,5 +81,6 @@ Dialogul de confirmare comun a devenit `ConfirmDialog` (`src/components/confirm-
 ## Nu intră în acest modul
 - SMS sau email către pacienți ori utilizatori.
 - Gestionarea echipei (conturi, roluri).
-- Schimbarea emailului și poza de profil.
+- Poza de profil.
+- Confirmarea noului email printr-un link trimis pe email (schimbarea se face direct, după parola curentă).
 - Alerte marcate „citite” sau ascunse.
