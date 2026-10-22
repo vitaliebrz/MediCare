@@ -161,11 +161,11 @@ const PersonalData = ({ patient }: { patient: Patient }) => {
         ['Note', patient.notes],
     ];
     return (
-        <dl className='grid gap-x-8 gap-y-3 rounded-lg border bg-white p-4 sm:grid-cols-2'>
+        <dl className='grid grid-cols-1 gap-x-8 gap-y-3 rounded-lg border bg-white p-4 sm:grid-cols-2'>
             {rows.map(([label, value]) => (
                 <div key={label}>
                     <dt className='text-xs text-slate-500'>{label}</dt>
-                    <dd className='whitespace-pre-line'>{value || '—'}</dd>
+                    <dd className='whitespace-pre-line break-words'>{value || '—'}</dd>
                 </div>
             ))}
         </dl>

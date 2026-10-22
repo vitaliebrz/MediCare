@@ -131,7 +131,7 @@ export const PatientForm = ({ trigger, initialData }: PatientFormProps) => {
 
             {/* keepMounted: câmpurile tab-ului ascuns rămân în pagină, deci își păstrează valorile */}
             <TabsContent value='personal' keepMounted className='flex flex-col gap-4 pt-2'>
-              <div className='grid gap-4 sm:grid-cols-2'>
+              <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
                 <FormField label='Nume' required error={errors.lastName?.message}>
                   <Input id='lastName' placeholder='Popescu' {...register('lastName')} />
                 </FormField>
