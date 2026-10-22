@@ -25,24 +25,33 @@ export const Bottombar = () => {
     const pathname = usePathname();
 
     return (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 flex justify-around bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-50">
+        // Zonele sigure (env(safe-area-inset-*)): jos bara de gesturi / linia „home”, lateral colțurile
+        // rotunjite ale ecranului. Fără ele, bara stătea sub linia de gesturi, iar Dashboard și Setări,
+        // la margini, intrau în colțuri. Pe calculator și în browser zonele sunt 0.
+        <nav
+            aria-label='Navigare'
+            className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] shadow-[0_-1px_4px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900"
+        >
             {navItems.map((item) => {
                 const isActive = item.href === '/'
                     ? pathname === '/'
                     : pathname.startsWith(item.href);
                 const Icon = item.icon;
                 return (
-                    <Link key={item.href} href={item.href} className="flex-1">
+                    <Link key={item.href} href={item.href} aria-current={isActive ? 'page' : undefined} className="min-w-0 flex-1">
                         <div
                             className={cn(
-                                'flex flex-col gap-1 items-center py-2 text-xs transition-colors',
+                                'flex flex-col items-center gap-1 pt-2 pb-1.5 text-[11px] leading-tight transition-colors',
                                 isActive
-                                    ? 'text-teal-500 font-medium'
-                                    : 'text-zinc-500 hover:text-zinc-700'
+                                    ? 'font-semibold text-teal-600'
+                                    : 'text-slate-600 hover:text-slate-900'
                             )}
                         >
-                            <Icon className="h-5 w-5 shrink-0" />
-                            <span>{item.label}</span>
+                            {/* Pagina activă: iconița pe un fundal turcoaz deschis, ca să se vadă și dintr-o privire */}
+                            <span className={cn('rounded-full px-3 py-0.5', isActive && 'bg-teal-50')}>
+                                <Icon className="h-5 w-5 shrink-0" />
+                            </span>
+                            <span className="max-w-full truncate px-0.5">{item.label}</span>
                         </div>
                     </Link>
                 );
