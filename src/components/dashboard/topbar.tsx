@@ -38,7 +38,8 @@ export const Topbar = ({ userEmail, userName, notifications }: TopbarProps) => {
 
 
     return (
-        <div className='bg-white h-[76.5px] px-5 border-b flex items-center justify-between gap-4'>
+        // box-content + pt: în aplicația instalată, bara coboară sub zona ceasului/camerei (pe calculator zona e 0)
+        <div className='box-content bg-white h-[76.5px] pt-[env(safe-area-inset-top)] px-5 border-b flex items-center justify-between gap-4'>
             <div className='flex gap-2 items-center flex-1'>
                 <div className='md:hidden bg-teal-500 text-white p-1 rounded-lg shrink-0'>
                     <DentalToothIcon className='h-7 w-7' />
@@ -52,7 +53,7 @@ export const Topbar = ({ userEmail, userName, notifications }: TopbarProps) => {
                         <Button
                             title='Pacient nou'
                             aria-label='Pacient nou'
-                            className='flex gap-2 border rounded-md bg-teal-100 hover:bg-teal-200 text-teal-500 hover:text-teal-600 font-medium transition duration-200 ease-in-out hover:cursor-pointer'
+                            className='flex gap-2 rounded-md border border-teal-200 bg-teal-50 font-medium text-teal-700 transition duration-200 ease-in-out hover:cursor-pointer hover:bg-teal-100 hover:text-teal-800'
                         >
                             <UserPlus className='h-5 w-5 shrink-0' />
                             <span className='hidden md:inline'>Pacient nou</span>

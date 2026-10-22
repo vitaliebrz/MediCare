@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import type { AppNotification } from '@/lib/db/notification-queries';
 import { NotificationList } from './notification-list';
 
-const BUTTON_CLASS = 'relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-md bg-accent text-zinc-500 hover:bg-teal-200/50 hover:text-zinc-700';
+const BUTTON_CLASS = 'relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900';
 
 // Clopoțelul din bara de sus. Primește alertele ca Promise (pornit în layout, fără await):
 // pagina se afișează imediat, iar clopoțelul își arată numărul când sosesc alertele.

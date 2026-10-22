@@ -21,9 +21,13 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: "MediCare", statusBarStyle: "default" },
 };
 
-// Culoarea barei de sus a telefonului / ferestrei aplicației instalate (turcoazul aplicației)
 export const viewport: Viewport = {
-  themeColor: "#14b8a6",
+  // Bara de stare a telefonului (ceas, baterie) are aceeași culoare ca bara de sus a aplicației (albă),
+  // ca să nu apară o trecere de culoare între ele
+  themeColor: "#ffffff",
+  // Pagina ocupă tot ecranul, inclusiv sub colțurile rotunjite și bara de gesturi; barele de sus și de jos
+  // se feresc singure de ele cu env(safe-area-inset-*) (vezi topbar.tsx și bottombar.tsx)
+  viewportFit: "cover",
 };
 const poppins = Poppins({
   subsets: ['latin'],

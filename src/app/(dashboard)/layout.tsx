@@ -27,7 +27,8 @@ export default async function DashboardLayout({
       />
       <div className='flex-1 flex flex-col overflow-hidden'>
         <Topbar userEmail={user.email} userName={user.fullName} notifications={notifications} />
-        <main className='flex-1 overflow-y-auto pb-16 md:pb-0'>{children}</main>
+        {/* Pe telefon: loc pentru bara de jos (4rem) + zona bării de gesturi a telefonului */}
+        <main className='flex-1 overflow-y-auto pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0'>{children}</main>
         <Bottombar  />
       </div>
 
