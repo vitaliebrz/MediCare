@@ -38,8 +38,11 @@ export const Topbar = ({ userEmail, userName, notifications }: TopbarProps) => {
 
 
     return (
-        // box-content + pt: în aplicația instalată, bara coboară sub zona ceasului/camerei (pe calculator zona e 0)
-        <div className='box-content bg-white h-[76.5px] pt-[env(safe-area-inset-top)] px-5 border-b flex items-center justify-between gap-4'>
+        // box-content + pt: în aplicația instalată, bara coboară sub zona ceasului/camerei (pe calculator zona e 0).
+        // sticky + fundal alb solid: iOS 26 estompează (Liquid Glass) ~40pt sub bara de stare, peste orice conținut,
+        // dar NU când la marginea de sus stă o bară fixă/sticky, pe toată lățimea, cu o singură culoare de fundal:
+        // atunci folosește culoarea ei. Fără sticky, butoanele de aici apăreau „în ceață”.
+        <div className='sticky top-0 z-40 box-content bg-white h-[76.5px] pt-[env(safe-area-inset-top)] px-5 border-b flex items-center justify-between gap-4'>
             <div className='flex gap-2 items-center flex-1'>
                 <div className='md:hidden bg-teal-500 text-white p-1 rounded-lg shrink-0'>
                     <DentalToothIcon className='h-7 w-7' />
