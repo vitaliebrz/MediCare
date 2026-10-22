@@ -178,7 +178,7 @@ export const AppointmentForm = ({ open, onOpenChange, appointment, defaults, doc
                                     <Search className='h-3.5 w-3.5' /> Caută în listă
                                 </Button>
                             </div>
-                            <div className='grid gap-3 sm:grid-cols-3 sm:items-start'>
+                            <div className='grid grid-cols-1 gap-3 sm:grid-cols-3 sm:items-start'>
                                 <Field label='Nume' required error={errors.newPatient?.lastName?.message}>
                                     <Input placeholder='Popescu' {...register('newPatient.lastName')} />
                                 </Field>
@@ -233,7 +233,7 @@ export const AppointmentForm = ({ open, onOpenChange, appointment, defaults, doc
                         )}
                     </Field>
 
-                    <div className='grid gap-4 sm:grid-cols-3 sm:items-start'>
+                    <div className='grid grid-cols-1 gap-4 sm:grid-cols-3 sm:items-start'>
                         <Field label='Data' required error={errors.date?.message}>
                             <Input type='date' {...register('date')} />
                         </Field>

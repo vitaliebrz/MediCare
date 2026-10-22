@@ -164,7 +164,7 @@ export const TreatmentForm = ({ patientId, doctors, services, currency, prefill,
                             </div>
                         </div>
                     )}
-                    <div className='grid gap-4 sm:grid-cols-2'>
+                    <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
                         <Field label='Dinte'>
                             <Controller
                                 control={control}
@@ -271,7 +271,7 @@ export const TreatmentForm = ({ patientId, doctors, services, currency, prefill,
                         <Textarea placeholder='ex. Control peste 6 luni' {...register('recomendations')} />
                     </Field>
 
-                    <div className='grid gap-4 sm:grid-cols-3 sm:items-start'>
+                    <div className='grid grid-cols-1 gap-4 sm:grid-cols-3 sm:items-start'>
                         <Field label={`Preț (${currency})`} required error={errors.price?.message}>
                             <Input type='number' min={0} step='0.01' {...register('price', { valueAsNumber: true })} />
                         </Field>

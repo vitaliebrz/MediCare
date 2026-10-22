@@ -71,7 +71,7 @@ export default async function DashboardPage({
             </div>
 
             {/* Rândul 2: încasări (2/3) + programări azi (1/3) */}
-            <div className='grid gap-4 lg:grid-cols-3'>
+            <div className='grid grid-cols-1 gap-4 lg:grid-cols-3'>
                 <section className='rounded-lg border bg-white p-4 lg:col-span-2'>
                     <div className='mb-4 flex items-baseline justify-between gap-2'>
                         <h2 className='font-semibold'>Încasări în perioadă</h2>
@@ -86,7 +86,7 @@ export default async function DashboardPage({
             </div>
 
             {/* Rândul 3: top tratamente + activitate recentă */}
-            <div className='grid gap-4 lg:grid-cols-2'>
+            <div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>
                 <section className='rounded-lg border bg-white p-4'>
                     <h2 className='mb-4 font-semibold'>Top 5 tratamente</h2>
                     <TopTreatmentsChart data={data.topTreatments} currency={currency} />

@@ -25,7 +25,7 @@ export const StatCard = ({ title, value, icon: Icon, change, higherIsBetter, com
     const tone = changeTone(change, higherIsBetter);
 
     return (
-        <div className='flex flex-col gap-3 rounded-lg border bg-white p-4'>
+        <div className='flex min-w-0 flex-col gap-3 rounded-lg border bg-white p-4'>
             <div className='flex items-start justify-between gap-2'>
                 <div className='rounded-lg bg-teal-50 p-2 text-teal-600'>
                     <Icon className='h-5 w-5' />
@@ -40,7 +40,7 @@ export const StatCard = ({ title, value, icon: Icon, change, higherIsBetter, com
             </div>
             <div>
                 <p className='text-sm text-slate-500'>{title}</p>
-                <p className='mt-1 text-2xl font-bold tabular-nums'>{value}</p>
+                <p className='mt-1 text-xl font-bold tabular-nums break-words sm:text-2xl'>{value}</p>
                 {(change.kind !== 'none' && comparisonLabel) || footnote ? (
                     <p className='mt-1 text-xs text-slate-500'>
                         {change.kind !== 'none' && comparisonLabel ? comparisonLabel : footnote}
